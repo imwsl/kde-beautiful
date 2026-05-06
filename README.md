@@ -1,5 +1,8 @@
 # kde-beautiful
 
+[![License](https://img.shields.io/github/license/imwsl/kde-beautiful?style=flat-square)](./LICENSE)
+[![Stars](https://img.shields.io/github/stars/imwsl/kde-beautiful?style=flat-square)](https://github.com/imwsl/kde-beautiful/stargazers)
+
 在 Fedora KDE Plasma 桌面上一键应用 **Catppuccin Mocha Mauve** 主题套件。
 
 ![桌面效果预览](./kde-desk.png)
