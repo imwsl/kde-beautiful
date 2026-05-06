@@ -2,8 +2,7 @@
 
 在 Fedora KDE Plasma 桌面上一键应用 **Catppuccin Mocha Mauve** 主题套件。
 
-<!-- 建议在此插入效果截图 -->
-<!-- ![预览截图](./preview.png) -->
+![桌面效果预览](./kde-desk.png)
 
 ## 效果包含
 
@@ -18,10 +17,35 @@
 
 ## 前置条件
 
-- Fedora Linux（或其他 RPM 系发行版）
-- KDE Plasma 桌面环境
-- 可用的网络连接
-- `sudo` 权限（**不要用 root 直接运行**）
+**系统环境**
+
+- Fedora Linux（或其他 RPM 系发行版），使用 `dnf` 包管理器
+- KDE Plasma 5 或 6 桌面环境
+- **必须在已登录的 KDE 图形会话中运行**，脚本依赖 `lookandfeeltool` 应用主题、通过 D-Bus 重载 KWin，在 TTY 或 SSH 中执行会跳过这两步
+
+**权限**
+
+- 以普通用户身份运行，**不要用 root**；脚本内部会在需要时自动调用 `sudo`
+- 需要 `sudo` 权限用于：安装 dnf 包、写入 `/usr/share/sddm/themes/`、创建 `/etc/sddm.conf.d/theme.conf`
+
+**网络**
+
+- 能够访问 **GitHub**（下载主题、字体、SDDM 包）
+- 能够访问 **Fedora COPR**（安装 Klassy 窗口装饰和 Ghostty 终端）
+
+**系统工具**（标准 KDE Plasma 安装中均已包含，无需手动安装）
+
+| 工具 | 用途 |
+|------|------|
+| `fc-cache` | 刷新字体缓存（来自 `fontconfig`） |
+| `kwriteconfig5` | 写入 KWin 合成器配置（来自 `kf5-kconfig`） |
+| `lookandfeeltool` | 应用全局主题（来自 `plasma-workspace`） |
+| `dbus-send` | 通知 KWin 重载配置（来自 `dbus`） |
+
+**注意事项**
+
+- 脚本会**直接覆盖** `~/.config/ghostty/config`，如已有自定义配置请提前备份
+- Ghostty 配置中 `shell-integration = zsh`，默认适配 zsh；使用其他 Shell 需安装后手动修改
 
 ## 安装
 
