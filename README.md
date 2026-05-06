@@ -19,6 +19,7 @@
 | 登录界面 | Catppuccin Mocha Mauve SDDM 主题 |
 | 终端 | Ghostty + Catppuccin Mocha + AdwaitaMono Nerd Font |
 | 合成器 | KWin 三缓冲、模糊、Magic Lamp 动画等 |
+| 输入法 | fcitx5-rime + 雾凇拼音 + Material Color deepPurple 皮肤 |
 
 ## 前置条件
 
@@ -49,8 +50,9 @@
 
 **注意事项**
 
-- 脚本会**直接覆盖** `~/.config/ghostty/config`，如已有自定义配置请提前备份
+- 脚本会**直接覆盖** `~/.config/ghostty/config` 和 `~/.config/fcitx5/conf/classicui.conf`，如已有自定义配置请提前备份
 - Ghostty 配置中 `shell-integration = zsh`，默认适配 zsh；使用其他 Shell 需安装后手动修改
+- rime-ice 安装前会自动备份原有 Rime 配置至 `~/.local/share/fcitx5/rime.bak.<时间戳>`
 
 ## 安装
 
@@ -71,7 +73,23 @@ chmod +x kde-catppuccin-setup.sh
 2. **系统设置 → 外观 → 图标** → 选择 `Papirus-Dark`
 3. **系统设置 → 外观 → 光标** → 选择 `Catppuccin-Mocha-Mauve-Cursors`
 4. **系统设置 → 窗口装饰** → 选择 `Klassy`
-5. 注销或重启以使所有更改完全生效
+5. **系统设置 → 输入法** → 添加「Rime」并将其置顶
+6. 注销或重启以使所有更改完全生效
+
+## 输入法
+
+脚本使用 **fcitx5 + rime-ice（雾凇拼音）** 作为中文输入方案，皮肤为 **Material Color deepPurple**。
+
+| 配置项 | 值 |
+|--------|-----|
+| 输入方案 | 雾凇拼音（全拼）、多种双拼可选 |
+| 候选词数量 | 10 个 |
+| 中英切换 | 左右 Shift 均可切换 |
+| 皮肤 | fcitx5-material-color deepPurple |
+
+**自定义词组**：编辑 `~/.local/share/fcitx5/rime/custom_phrase.txt`，格式为 `词组<Tab>拼音<Tab>权重`。
+
+**添加/修改配置**：在 `~/.local/share/fcitx5/rime/` 中创建对应的 `.custom.yaml` 文件覆盖默认值，避免直接修改源文件，方便后续更新 rime-ice。
 
 ## 致谢
 
@@ -80,6 +98,8 @@ chmod +x kde-catppuccin-setup.sh
 - [Papirus](https://github.com/PapirusDevelopmentTeam/papirus-icon-theme) — 图标主题
 - [Ghostty](https://ghostty.org) — 终端模拟器
 - [Nerd Fonts](https://github.com/ryanoasis/nerd-fonts) — AdwaitaMono 字体
+- [rime-ice](https://github.com/iDvel/rime-ice) — 雾凇拼音输入方案
+- [Fcitx5-Material-Color](https://github.com/hosxy/Fcitx5-Material-Color) — fcitx5 皮肤
 
 ## 许可证
 
