@@ -2,6 +2,8 @@
 
 [![License](https://img.shields.io/github/license/imwsl/kde-beautiful?style=flat-square)](./LICENSE)
 [![Stars](https://img.shields.io/github/stars/imwsl/kde-beautiful?style=flat-square)](https://github.com/imwsl/kde-beautiful/stargazers)
+[![Fedora](https://img.shields.io/badge/Fedora-51A2DA?style=flat-square&logo=fedora&logoColor=white)](https://fedoraproject.org)
+[![KDE Plasma](https://img.shields.io/badge/KDE%20Plasma-1D99F3?style=flat-square&logo=kde&logoColor=white)](https://kde.org/plasma-desktop)
 
 在 Fedora KDE Plasma 桌面上一键应用 **Catppuccin Mocha Mauve** 主题套件。
 
