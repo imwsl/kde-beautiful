@@ -183,6 +183,101 @@ GHOSTTY_EOF
 ok "Ghostty 配置写入完毕"
 
 # ─────────────────────────────────────────────
+# 9. fcitx5 输入法 + rime-ice + Material 主题
+# ─────────────────────────────────────────────
+info "安装 fcitx5 输入法相关包..."
+sudo dnf install -y \
+    fcitx5 \
+    fcitx5-rime \
+    fcitx5-qt \
+    fcitx5-gtk \
+    fcitx5-configtool \
+    librime \
+    librime-lua
+ok "fcitx5 安装完毕"
+
+# 写入 KDE Plasma 自动加载的环境变量，确保 GTK/Qt 应用使用 fcitx5
+mkdir -p "$HOME/.config/plasma-workspace/env"
+cat > "$HOME/.config/plasma-workspace/env/fcitx5.sh" << 'FCITX_EOF'
+export INPUT_METHOD=fcitx
+export GTK_IM_MODULE=fcitx
+export QT_IM_MODULE=fcitx
+export XMODIFIERS=@im=fcitx
+FCITX_EOF
+
+# rime-ice 雾凇拼音
+RIME_DIR="$HOME/.local/share/fcitx5/rime"
+if [[ ! -f "$RIME_DIR/rime_ice.schema.yaml" ]]; then
+    info "安装 rime-ice 雾凇拼音..."
+    if [[ -d "$RIME_DIR" ]]; then
+        cp -r "$RIME_DIR" "${RIME_DIR}.bak.$(date +%Y%m%d%H%M%S)"
+        warn "已备份原有 Rime 配置"
+    fi
+    mkdir -p "$RIME_DIR"
+    git clone --depth=1 https://github.com/iDvel/rime-ice.git "$TMPDIR_SETUP/rime-ice"
+
+    # 复制全部文件，再删除平台特定和无关文件
+    cp -r "$TMPDIR_SETUP/rime-ice/." "$RIME_DIR/"
+    rm -rf "$RIME_DIR/.git" "$RIME_DIR/.github" "$RIME_DIR/.gitignore" \
+           "$RIME_DIR/README.md" "$RIME_DIR/LICENSE" "$RIME_DIR/AGENTS.md" \
+           "$RIME_DIR/squirrel.yaml" "$RIME_DIR/weasel.yaml" \
+           "$RIME_DIR/recipe.yaml" "$RIME_DIR/go.work" "$RIME_DIR/others"
+
+    # 候选词 10 个，右 Shift 同左 Shift 切换中英
+    sed -i 's/page_size: 5/page_size: 10/' "$RIME_DIR/default.yaml"
+    sed -i 's/Shift_R: noop/Shift_R: commit_code/' "$RIME_DIR/default.yaml"
+    ok "rime-ice 安装完毕"
+else
+    ok "rime-ice 已安装，跳过"
+fi
+
+# fcitx5-material-color deepPurple 皮肤
+THEME_DIR="$HOME/.local/share/fcitx5/themes/Material-Color-deepPurple"
+if [[ ! -f "$THEME_DIR/theme.conf" ]]; then
+    info "安装 fcitx5-material-color deepPurple 主题..."
+    git clone --depth=1 https://github.com/hosxy/Fcitx5-Material-Color.git \
+        "$TMPDIR_SETUP/fcitx5-material-color"
+    mkdir -p "$THEME_DIR"
+    cp "$TMPDIR_SETUP/fcitx5-material-color/theme-deepPurple.conf" "$THEME_DIR/theme.conf"
+    cp "$TMPDIR_SETUP/fcitx5-material-color/arrow.png" "$THEME_DIR/"
+    cp "$TMPDIR_SETUP/fcitx5-material-color/radio.png" "$THEME_DIR/"
+    ok "deepPurple 主题安装完毕"
+else
+    ok "deepPurple 主题已安装，跳过"
+fi
+
+# 写入 classicui.conf 启用主题
+mkdir -p "$HOME/.config/fcitx5/conf"
+cat > "$HOME/.config/fcitx5/conf/classicui.conf" << 'CLASSICUI_EOF'
+Vertical Candidate List=False
+WheelForPaging=True
+Font="Sans 10"
+MenuFont="Sans 10"
+TrayFont="Sans Bold 10"
+TrayOutlineColor=#000000
+TrayTextColor=#ffffff
+PreferTextIcon=False
+ShowLayoutNameInIcon=True
+UseInputMethodLanguageToDisplayText=True
+Theme=Material-Color-deepPurple
+DarkTheme=Material-Color-deepPurple
+UseDarkTheme=True
+UseAccentColor=True
+PerScreenDPI=False
+ForceWaylandDPI=0
+EnableFractionalScale=True
+CLASSICUI_EOF
+
+# 在图形会话中重启 fcitx5 使配置生效
+if [[ -n "${DISPLAY:-}${WAYLAND_DISPLAY:-}" ]]; then
+    pkill fcitx5 2>/dev/null || true
+    sleep 1
+    fcitx5 -d 2>/dev/null && ok "fcitx5 已重启" || warn "fcitx5 启动失败，请手动启动"
+else
+    warn "非图形会话，重启后 fcitx5 自动生效"
+fi
+
+# ─────────────────────────────────────────────
 # 完成
 # ─────────────────────────────────────────────
 echo ""
@@ -195,4 +290,5 @@ echo "  1. 系统设置 → 外观 → 全局主题 → 选择 Catppuccin-Mocha-
 echo "  2. 系统设置 → 外观 → 图标    → 选择 Papirus-Dark"
 echo "  3. 系统设置 → 外观 → 光标    → 选择 Catppuccin-Mocha-Mauve-Cursors"
 echo "  4. 系统设置 → 窗口装饰        → 选择 Klassy"
-echo "  5. 注销或重启以使所有更改完全生效"
+echo "  5. 系统设置 → 输入法          → 添加「Rime」并将其置顶"
+echo "  6. 注销或重启以使所有更改完全生效"

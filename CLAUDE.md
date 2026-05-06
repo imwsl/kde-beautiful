@@ -24,7 +24,7 @@ shellcheck kde-catppuccin-setup.sh
 
 ## 架构
 
-脚本按顺序执行 8 个相互独立的安装阶段：
+脚本按顺序执行 9 个相互独立的安装阶段：
 
 1. **系统软件包** — 通过 `dnf` 安装 Kvantum、Klassy、Papirus、字体、git、curl
 2. **Ghostty 终端** — 若尚未安装，从 COPR 源安装
@@ -34,6 +34,7 @@ shellcheck kde-catppuccin-setup.sh
 6. **Papirus 图标文件夹** — 对所有 Papirus 变体应用 Catppuccin mauve 配色
 7. **KWin 特效** — 通过 `kwriteconfig5` 配置合成器与动画，经由 D-Bus 重载
 8. **Ghostty 配置** — 写入 `~/.config/ghostty/config`，包含 Catppuccin Mocha 主题与 AdwaitaMono 字体
+9. **fcitx5 输入法** — 安装 fcitx5-rime，部署 rime-ice 雾凇拼音（10 候选词、左右 Shift 切换中英），应用 fcitx5-material-color deepPurple 皮肤，写入 `~/.config/plasma-workspace/env/fcitx5.sh` 环境变量
 
 ## 关键模式
 
