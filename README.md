@@ -55,7 +55,7 @@
 ## 安装
 
 ```bash
-git clone https://github.com/yangjie6020/kde-beautiful.git
+git clone https://github.com/imwsl/kde-beautiful.git
 cd kde-beautiful
 chmod +x kde-catppuccin-setup.sh
 ./kde-catppuccin-setup.sh
