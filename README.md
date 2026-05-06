@@ -19,7 +19,7 @@
 | 登录界面 | Catppuccin Mocha Mauve SDDM 主题 |
 | 终端 | Ghostty + Catppuccin Mocha + AdwaitaMono Nerd Font |
 | 合成器 | KWin 三缓冲、模糊、Magic Lamp 动画等 |
-| 输入法 | fcitx5-rime + 雾凇拼音 + Material Color deepPurple 皮肤 |
+| 输入法 | fcitx5-rime + 雾凇拼音 + Catppuccin Mocha Mauve 皮肤（80% 不透明） |
 
 ## 前置条件
 
@@ -78,14 +78,15 @@ chmod +x kde-catppuccin-setup.sh
 
 ## 输入法
 
-脚本使用 **fcitx5 + rime-ice（雾凇拼音）** 作为中文输入方案，皮肤为 **Material Color deepPurple**。
+脚本使用 **fcitx5 + rime-ice（雾凇拼音）** 作为中文输入方案，皮肤为 **Catppuccin Mocha Mauve**（背景 80% 不透明）。
 
 | 配置项 | 值 |
 |--------|-----|
 | 输入方案 | 雾凇拼音（全拼）、多种双拼可选 |
 | 候选词数量 | 10 个 |
 | 中英切换 | 左右 Shift 均可切换 |
-| 皮肤 | fcitx5-material-color deepPurple |
+| 皮肤 | catppuccin-mocha-mauve（来自 catppuccin/fcitx5） |
+| 背景透明度 | 80% 不透明（`#313244CC`） |
 
 **自定义词组**：编辑 `~/.local/share/fcitx5/rime/custom_phrase.txt`，格式为 `词组<Tab>拼音<Tab>权重`。
 
@@ -99,7 +100,7 @@ chmod +x kde-catppuccin-setup.sh
 - [Ghostty](https://ghostty.org) — 终端模拟器
 - [Nerd Fonts](https://github.com/ryanoasis/nerd-fonts) — AdwaitaMono 字体
 - [rime-ice](https://github.com/iDvel/rime-ice) — 雾凇拼音输入方案
-- [Fcitx5-Material-Color](https://github.com/hosxy/Fcitx5-Material-Color) — fcitx5 皮肤
+- [catppuccin/fcitx5](https://github.com/catppuccin/fcitx5) — fcitx5 Catppuccin 皮肤
 
 ## 许可证
 

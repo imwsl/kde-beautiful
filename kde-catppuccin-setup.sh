@@ -183,7 +183,7 @@ GHOSTTY_EOF
 ok "Ghostty 配置写入完毕"
 
 # ─────────────────────────────────────────────
-# 9. fcitx5 输入法 + rime-ice + Material 主题
+# 9. fcitx5 输入法 + rime-ice + Catppuccin 主题
 # ─────────────────────────────────────────────
 info "安装 fcitx5 输入法相关包..."
 sudo dnf install -y \
@@ -231,19 +231,19 @@ else
     ok "rime-ice 已安装，跳过"
 fi
 
-# fcitx5-material-color deepPurple 皮肤
-THEME_DIR="$HOME/.local/share/fcitx5/themes/Material-Color-deepPurple"
+# catppuccin-mocha-mauve 皮肤
+THEME_DIR="$HOME/.local/share/fcitx5/themes/catppuccin-mocha-mauve"
 if [[ ! -f "$THEME_DIR/theme.conf" ]]; then
-    info "安装 fcitx5-material-color deepPurple 主题..."
-    git clone --depth=1 https://github.com/hosxy/Fcitx5-Material-Color.git \
-        "$TMPDIR_SETUP/fcitx5-material-color"
-    mkdir -p "$THEME_DIR"
-    cp "$TMPDIR_SETUP/fcitx5-material-color/theme-deepPurple.conf" "$THEME_DIR/theme.conf"
-    cp "$TMPDIR_SETUP/fcitx5-material-color/arrow.png" "$THEME_DIR/"
-    cp "$TMPDIR_SETUP/fcitx5-material-color/radio.png" "$THEME_DIR/"
-    ok "deepPurple 主题安装完毕"
+    info "安装 fcitx5 Catppuccin Mocha Mauve 主题..."
+    git clone --depth=1 https://github.com/catppuccin/fcitx5.git \
+        "$TMPDIR_SETUP/catppuccin-fcitx5"
+    mkdir -p "$(dirname "$THEME_DIR")"
+    cp -r "$TMPDIR_SETUP/catppuccin-fcitx5/src/catppuccin-mocha-mauve" "$THEME_DIR"
+    # 背景设为 80% 不透明（CC alpha）
+    sed -i 's/Color=#313244$/Color=#313244CC/' "$THEME_DIR/theme.conf"
+    ok "catppuccin-mocha-mauve 主题安装完毕"
 else
-    ok "deepPurple 主题已安装，跳过"
+    ok "catppuccin-mocha-mauve 主题已安装，跳过"
 fi
 
 # 写入 classicui.conf 启用主题
@@ -259,8 +259,8 @@ TrayTextColor=#ffffff
 PreferTextIcon=False
 ShowLayoutNameInIcon=True
 UseInputMethodLanguageToDisplayText=True
-Theme=Material-Color-deepPurple
-DarkTheme=Material-Color-deepPurple
+Theme=catppuccin-mocha-mauve
+DarkTheme=catppuccin-mocha-mauve
 UseDarkTheme=True
 UseAccentColor=True
 PerScreenDPI=False
