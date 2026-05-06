@@ -272,7 +272,7 @@ CLASSICUI_EOF
 if [[ -n "${DISPLAY:-}${WAYLAND_DISPLAY:-}" ]]; then
     pkill fcitx5 2>/dev/null || true
     sleep 1
-    fcitx5 -d 2>/dev/null && ok "fcitx5 已重启" || warn "fcitx5 启动失败，请手动启动"
+    if fcitx5 -d 2>/dev/null; then ok "fcitx5 已重启"; else warn "fcitx5 启动失败，请手动启动"; fi
 else
     warn "非图形会话，重启后 fcitx5 自动生效"
 fi
