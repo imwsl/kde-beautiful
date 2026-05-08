@@ -24,17 +24,18 @@ shellcheck kde-catppuccin-setup.sh
 
 ## 架构
 
-脚本按顺序执行 9 个相互独立的安装阶段：
+脚本按顺序执行 10 个相互独立的安装阶段：
 
 1. **系统软件包** — 通过 `dnf` 安装 Kvantum、Klassy、Papirus、字体、git、curl
 2. **Ghostty 终端** — 若尚未安装，从 COPR 源安装
 3. **AdwaitaMono Nerd Font** — 从 GitHub Releases 下载，安装至 `~/.local/share/fonts/`
-4. **Catppuccin KDE 主题** — 克隆上游仓库，以 Mocha/Mauve/Modern 参数运行其安装器，通过 `lookandfeeltool` 应用主题
-5. **SDDM 登录主题** — 下载预构建包，安装至 `/usr/share/sddm/themes/`，写入 `/etc/sddm.conf.d/theme.conf`
-6. **Papirus 图标文件夹** — 对所有 Papirus 变体应用 Catppuccin mauve 配色
-7. **KWin 特效** — 通过 `kwriteconfig5` 配置合成器与动画，经由 D-Bus 重载
-8. **Ghostty 配置** — 写入 `~/.config/ghostty/config`，包含 Catppuccin Mocha 主题与 AdwaitaMono 字体
-9. **fcitx5 输入法** — 安装 fcitx5-rime，部署 rime-ice 雾凇拼音（10 候选词、左右 Shift 切换中英），应用 fcitx5-material-color deepPurple 皮肤，写入 `~/.config/plasma-workspace/env/fcitx5.sh` 环境变量
+4. **HarmonyOS Sans 字体** — 从 GitHub（huawei-fonts/HarmonyOS-Sans）下载完整字体包，安装至 `~/.local/share/fonts/HarmonyOS-Sans/`；写入 `~/.config/fontconfig/conf.d/60-harmonyos-default.conf` 设为默认 sans-serif（英文走 HarmonyOS Sans，中文走 HarmonyOS Sans SC）；通过 `kwriteconfig6` 将 KDE 全部字体项设为 HarmonyOS Sans SC
+5. **Catppuccin KDE 主题** — 克隆上游仓库，以 Mocha/Mauve/Modern 参数运行其安装器，通过 `lookandfeeltool` 应用主题
+6. **SDDM 登录主题** — 下载预构建包，安装至 `/usr/share/sddm/themes/`，写入 `/etc/sddm.conf.d/theme.conf`
+7. **Papirus 图标文件夹** — 对所有 Papirus 变体应用 Catppuccin mauve 配色
+8. **KWin 特效** — 通过 `kwriteconfig5` 配置合成器与动画，经由 D-Bus 重载
+9. **Ghostty 配置** — 写入 `~/.config/ghostty/config`，包含 Catppuccin Mocha 主题与 AdwaitaMono 字体
+10. **fcitx5 输入法** — 安装 fcitx5-rime，部署 rime-ice 雾凇拼音（10 候选词、左右 Shift 切换中英），应用 fcitx5-material-color deepPurple 皮肤，写入 `~/.config/plasma-workspace/env/fcitx5.sh` 环境变量
 
 ## 关键模式
 
