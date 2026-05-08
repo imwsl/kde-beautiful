@@ -62,7 +62,79 @@ else
 fi
 
 # ─────────────────────────────────────────────
-# 4. Catppuccin KDE 全局主题（Plasma + 配色 + 光标）
+# 4. HarmonyOS Sans 字体
+# ─────────────────────────────────────────────
+HARMONY_FONT_DIR="$HOME/.local/share/fonts/HarmonyOS-Sans"
+if [[ -f "$HARMONY_FONT_DIR/HarmonyOS_Sans/HarmonyOS_Sans_Regular.ttf" ]]; then
+    ok "HarmonyOS Sans 已安装，跳过下载"
+else
+    info "下载 HarmonyOS Sans 字体包（约 50 MB）..."
+    mkdir -p "$HARMONY_FONT_DIR"
+    curl -L --progress-bar \
+        "https://github.com/huawei-fonts/HarmonyOS-Sans/raw/main/HarmonyOS%20Sans.zip" \
+        -o "$TMPDIR_SETUP/HarmonyOS-Sans.zip"
+    info "解压字体..."
+    unzip -q "$TMPDIR_SETUP/HarmonyOS-Sans.zip" -d "$TMPDIR_SETUP/harmony-extracted/"
+    cp -r "$TMPDIR_SETUP/harmony-extracted/HarmonyOS Sans/." "$HARMONY_FONT_DIR/"
+    fc-cache -f "$HARMONY_FONT_DIR"
+    ok "HarmonyOS Sans 字体安装完毕"
+fi
+
+HARMONY_FC_CONF="$HOME/.config/fontconfig/conf.d/60-harmonyos-default.conf"
+if [[ -f "$HARMONY_FC_CONF" ]]; then
+    ok "fontconfig 配置已存在，跳过"
+else
+    info "写入 fontconfig 优先级配置..."
+    mkdir -p "$(dirname "$HARMONY_FC_CONF")"
+    cat > "$HARMONY_FC_CONF" << 'FONTCONFIG_EOF'
+<?xml version="1.0"?>
+<!DOCTYPE fontconfig SYSTEM "urn:fontconfig:fonts.dtd">
+<fontconfig>
+
+  <!-- 默认 sans-serif：英文用 HarmonyOS Sans，中文回落到 SC -->
+  <alias>
+    <family>sans-serif</family>
+    <prefer>
+      <family>HarmonyOS Sans</family>
+      <family>HarmonyOS Sans SC</family>
+    </prefer>
+  </alias>
+
+  <!-- 中文环境优先使用 HarmonyOS Sans SC -->
+  <match target="pattern">
+    <test name="lang" compare="contains">
+      <string>zh</string>
+    </test>
+    <test name="family">
+      <string>sans-serif</string>
+    </test>
+    <edit name="family" mode="prepend">
+      <string>HarmonyOS Sans SC</string>
+    </edit>
+  </match>
+
+</fontconfig>
+FONTCONFIG_EOF
+    ok "fontconfig 配置写入完毕"
+fi
+
+info "配置 KDE Plasma 字体..."
+kwriteconfig6 --file kdeglobals --group General \
+    --key font                 "HarmonyOS Sans SC,9,-1,5,400,0,0,0,0,0,0,0,0,0,0,1"
+kwriteconfig6 --file kdeglobals --group General \
+    --key menuFont             "HarmonyOS Sans SC,9,-1,5,400,0,0,0,0,0,0,0,0,0,0,1"
+kwriteconfig6 --file kdeglobals --group General \
+    --key toolBarFont          "HarmonyOS Sans SC,9,-1,5,400,0,0,0,0,0,0,0,0,0,0,1"
+kwriteconfig6 --file kdeglobals --group General \
+    --key smallestReadableFont "HarmonyOS Sans SC,8,-1,5,400,0,0,0,0,0,0,0,0,0,0,1"
+kwriteconfig6 --file kdeglobals --group General \
+    --key activeFont           "HarmonyOS Sans SC,9,-1,5,700,0,0,0,0,0,0,0,0,0,0,1"
+kwriteconfig6 --file kdeglobals --group WM \
+    --key activeFont           "HarmonyOS Sans SC,9,-1,5,700,0,0,0,0,0,0,0,0,0,0,1"
+ok "KDE 字体配置完毕"
+
+# ─────────────────────────────────────────────
+# 5. Catppuccin KDE 全局主题（Plasma + 配色 + 光标）
 # ─────────────────────────────────────────────
 info "安装 Catppuccin KDE 主题..."
 git clone --depth=1 https://github.com/catppuccin/kde.git "$TMPDIR_SETUP/catppuccin-kde"
@@ -77,7 +149,7 @@ lookandfeeltool -a "Catppuccin-Mocha-Mauve" 2>/dev/null || \
     warn "lookandfeeltool 未能自动应用，请在系统设置 → 全局主题中手动选择"
 
 # ─────────────────────────────────────────────
-# 5. SDDM 登录主题
+# 6. SDDM 登录主题
 # ─────────────────────────────────────────────
 info "安装 Catppuccin SDDM 登录主题..."
 curl -L --progress-bar \
@@ -93,7 +165,7 @@ EOF
 ok "SDDM 主题配置完毕"
 
 # ─────────────────────────────────────────────
-# 6. Papirus 图标 + Catppuccin 文件夹颜色
+# 7. Papirus 图标 + Catppuccin 文件夹颜色
 # ─────────────────────────────────────────────
 info "配置 Papirus 图标文件夹颜色（Catppuccin Mocha Mauve）..."
 PAPIRUS_FOLDERS="$TMPDIR_SETUP/papirus-folders"
@@ -111,7 +183,7 @@ done
 ok "Papirus 文件夹颜色配置完毕"
 
 # ─────────────────────────────────────────────
-# 7. KWin 合成器与特效
+# 8. KWin 合成器与特效
 # ─────────────────────────────────────────────
 info "配置 KWin 合成器与动效..."
 kwriteconfig5 --file kwinrc --group Compositing --key AnimationSpeed 5
@@ -129,7 +201,7 @@ else
 fi
 
 # ─────────────────────────────────────────────
-# 8. Ghostty 配置
+# 9. Ghostty 配置
 # ─────────────────────────────────────────────
 info "写入 Ghostty 配置..."
 mkdir -p "$HOME/.config/ghostty"
@@ -183,7 +255,7 @@ GHOSTTY_EOF
 ok "Ghostty 配置写入完毕"
 
 # ─────────────────────────────────────────────
-# 9. fcitx5 输入法 + rime-ice + Catppuccin 主题
+# 10. fcitx5 输入法 + rime-ice + Catppuccin 主题
 # ─────────────────────────────────────────────
 info "安装 fcitx5 输入法相关包..."
 sudo dnf install -y \
@@ -290,5 +362,6 @@ echo "  1. 系统设置 → 外观 → 全局主题 → 选择 Catppuccin-Mocha-
 echo "  2. 系统设置 → 外观 → 图标    → 选择 Papirus-Dark"
 echo "  3. 系统设置 → 外观 → 光标    → 选择 Catppuccin-Mocha-Mauve-Cursors"
 echo "  4. 系统设置 → 窗口装饰        → 选择 Klassy"
-echo "  5. 系统设置 → 输入法          → 添加「Rime」并将其置顶"
-echo "  6. 注销或重启以使所有更改完全生效"
+echo "  5. 系统设置 → 字体            → 确认各项已显示 HarmonyOS Sans SC"
+echo "  6. 系统设置 → 输入法          → 添加「Rime」并将其置顶"
+echo "  7. 注销或重启以使所有更改完全生效"
