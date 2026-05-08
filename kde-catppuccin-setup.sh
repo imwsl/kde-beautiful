@@ -197,9 +197,13 @@ kwriteconfig6 --file kwinrc --group Compositing --key GLCore true
 kwriteconfig6 --file kwinrc --group Plugins --key blurEnabled true
 kwriteconfig6 --file kwinrc --group Plugins --key magiclampEnabled true
 kwriteconfig6 --file kwinrc --group Plugins --key slideEnabled true
+kwriteconfig6 --file kwinrc --group Plugins --key wobblywindowsEnabled false
+kwriteconfig6 --file kdeglobals --group KDE --key AnimationDurationFactor 0.5
 
 # 通知 KWin 重新加载配置（桌面会话中运行时有效）
-if dbus-send --session --dest=org.kde.KWin /KWin org.kde.KWin.reconfigure 2>/dev/null; then
+if DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u)/bus" \
+   dbus-send --session --dest=org.kde.KWin --type=method_call \
+   /KWin org.kde.KWin.reconfigure 2>/dev/null; then
     ok "KWin 已重新加载配置"
 else
     warn "KWin 重载跳过（非图形会话），重启后生效"
@@ -426,6 +430,278 @@ EOF
 fi
 
 # ─────────────────────────────────────────────
+# 12. 现代 CLI 工具
+# ─────────────────────────────────────────────
+info "安装现代 CLI 工具..."
+CLI_PKGS=(fd-find fzf eza zoxide git-delta procs duf tealdeer hyperfine btop ncdu)
+CLI_MISSING=()
+for pkg in "${CLI_PKGS[@]}"; do
+    rpm -q "$pkg" &>/dev/null || CLI_MISSING+=("$pkg")
+done
+
+if [[ ${#CLI_MISSING[@]} -eq 0 ]]; then
+    ok "所有 CLI 工具已安装，跳过"
+else
+    sudo dnf install -y "${CLI_MISSING[@]}"
+    ok "CLI 工具安装完毕：${CLI_MISSING[*]}"
+fi
+
+# ─────────────────────────────────────────────
+# 13. zsh：插件 + powerlevel10k + zshrc
+# ─────────────────────────────────────────────
+info "配置 zsh..."
+OMZ_CUSTOM="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}"
+
+_clone_if_missing() {
+    local name="$1" url="$2" dest="$3"
+    if [[ -d "$dest" ]]; then
+        ok "zsh 插件 ${name} 已安装，跳过"
+    else
+        git clone --depth=1 "$url" "$dest"
+        ok "zsh 插件 ${name} 安装完毕"
+    fi
+}
+
+_clone_if_missing "zsh-autosuggestions" \
+    "https://github.com/zsh-users/zsh-autosuggestions" \
+    "$OMZ_CUSTOM/plugins/zsh-autosuggestions"
+
+_clone_if_missing "zsh-syntax-highlighting" \
+    "https://github.com/zsh-users/zsh-syntax-highlighting" \
+    "$OMZ_CUSTOM/plugins/zsh-syntax-highlighting"
+
+_clone_if_missing "powerlevel10k" \
+    "https://github.com/romkatv/powerlevel10k" \
+    "$OMZ_CUSTOM/themes/powerlevel10k"
+
+[[ -f ~/.zshrc ]] && cp ~/.zshrc ~/.zshrc.bak && info "已备份原有 ~/.zshrc 至 ~/.zshrc.bak"
+
+cat > ~/.zshrc << 'ZSHRC'
+# p10k instant prompt — must be at the very top
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+fi
+
+fastfetch
+
+export ZSH="$HOME/.oh-my-zsh"
+ZSH_THEME="powerlevel10k/powerlevel10k"
+
+# OMZ performance
+DISABLE_UNTRACKED_FILES_DIRTY="true"
+ZSH_COMPDUMP="$ZSH/cache/.zcompdump"
+zstyle ':omz:update' mode disabled
+
+plugins=(git zsh-autosuggestions zsh-syntax-highlighting)
+
+source $ZSH/oh-my-zsh.sh
+
+# PATH
+export PATH="$HOME/.opencode/bin:$HOME/.local/bin:$PATH:$HOME/.lmstudio/bin"
+[[ -f "$HOME/.local/bin/env" ]] && . "$HOME/.local/bin/env"
+
+# env
+export EDITOR=vim
+export MANPAGER="sh -c 'col -bx | bat -l man -p'"
+export BAT_THEME="Catppuccin Mocha"
+export FZF_DEFAULT_COMMAND="fd --type f --hidden --follow --exclude .git"
+export FZF_DEFAULT_OPTS="
+  --color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8
+  --color=fg:#cdd6f4,header:#f38ba8,info:#cba4f7,pointer:#f5e0dc
+  --color=marker:#b4befe,fg+:#cdd6f4,prompt:#cba4f7,hl+:#f38ba8
+  --color=selected-bg:#45475a
+  --multi --height 50% --border rounded
+"
+
+# history
+HISTSIZE=50000
+SAVEHIST=50000
+setopt HIST_IGNORE_DUPS HIST_IGNORE_SPACE HIST_REDUCE_BLANKS SHARE_HISTORY
+
+# zsh options
+setopt AUTO_CD
+setopt NO_BEEP
+setopt GLOB_DOTS
+
+# autosuggestions
+ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=#6c7086"
+ZSH_AUTOSUGGEST_STRATEGY=(history completion)
+
+# ── tool integrations ────────────────────────────────────────────────────────
+
+eval "$(zoxide init zsh)"
+source <(fzf --zsh)
+
+# ── aliases ──────────────────────────────────────────────────────────────────
+
+alias ls="eza --icons --group-directories-first"
+alias ll="eza -lh --icons --group-directories-first --git"
+alias la="eza -lAh --icons --group-directories-first --git"
+alias lt="eza --tree --icons --level=2"
+alias lta="eza --tree --icons --level=2 -a"
+
+alias cat="bat --paging=never"
+alias grep="rg"
+alias find="fd"
+alias df="duf"
+alias du="du -sh"
+alias top="btop"
+alias ps="procs"
+alias diff="delta"
+
+alias cls="clear"
+alias edz="vim ~/.zshrc"
+alias srz="source ~/.zshrc"
+alias ip="ip -c"
+alias tldr="tldr --color"
+
+alias fcd='cd "$(fd --type d | fzf)"'
+alias fcat='bat "$(fd --type f | fzf)"'
+alias fkill='procs | fzf | awk "{print $1}" | xargs kill'
+
+# p10k config (run `p10k configure` to regenerate)
+[[ -f ~/.p10k.zsh ]] && source ~/.p10k.zsh
+ZSHRC
+
+ok "~/.zshrc 写入完毕"
+
+# ─────────────────────────────────────────────
+# 14. fastfetch 配置
+# ─────────────────────────────────────────────
+info "写入 fastfetch 配置..."
+mkdir -p ~/.config/fastfetch
+
+# 自动检测 WiFi 接口前缀
+_WIFI_IF=$(ip -br link | awk '$1 ~ /^wl/ {print $1; exit}')
+_WIFI_PREFIX="${_WIFI_IF:0:3}"
+
+cat > ~/.config/fastfetch/config.jsonc << FFEOF
+{
+  "\$schema": "https://github.com/fastfetch-cli/fastfetch/raw/master/doc/json_schema.json",
+
+  "logo": {
+    "source": "Fedora",
+    "color": {
+      "1": "38;2;137;180;250",
+      "2": "38;2;203;166;247"
+    },
+    "padding": { "top": 1, "right": 2 }
+  },
+
+  "display": {
+    "separator": "  ",
+    "color": {
+      "keys":      "38;2;203;166;247",
+      "title":     "38;2;203;166;247",
+      "separator": "38;2;88;91;112"
+    },
+    "key": { "type": "icon", "paddingLeft": 1 },
+    "percent": { "type": ["bar", "num"], "ndigits": 0 },
+    "bar": {
+      "char": { "elapsed": "█", "total": "░" },
+      "border": { "left": "", "right": "" },
+      "color": { "elapsed": "38;2;137;180;250", "total": "38;2;49;50;68" },
+      "width": 10
+    }
+  },
+
+  "modules": [
+    {
+      "type": "title",
+      "color": {
+        "user": "1;38;2;166;227;161",
+        "at":   "38;2;88;91;112",
+        "host": "1;38;2;137;180;250"
+      }
+    },
+    { "type": "separator", "string": "─────────────────────────────────────────────" },
+
+    { "type": "os" },
+    { "type": "kernel" },
+    { "type": "host" },
+    { "type": "uptime" },
+    { "type": "packages" },
+    "break",
+
+    { "type": "display" },
+    { "type": "de" },
+    { "type": "wm" },
+    { "type": "theme" },
+    { "type": "icons" },
+    { "type": "cursor" },
+    { "type": "terminal" },
+    { "type": "shell" },
+    { "type": "font" },
+    "break",
+
+    { "type": "cpu", "showPeCoreCount": true, "temp": true },
+    { "type": "gpu", "hideType": "integrated", "temp": true },
+    { "type": "memory" },
+    { "type": "disk", "folders": "/" },
+    {
+      "type": "localip",
+      "showIpv4": true,
+      "showIpv6": false,
+      "showPrefixLen": false,
+      "defaultRouteOnly": false,
+      "namePrefix": "${_WIFI_PREFIX}"
+    },
+    "break",
+    "colors"
+  ]
+}
+FFEOF
+
+ok "fastfetch 配置写入完毕（网络接口前缀：${_WIFI_PREFIX}*）"
+
+# ─────────────────────────────────────────────
+# 15. Konsole 配置
+# ─────────────────────────────────────────────
+info "配置 Konsole..."
+KONSOLE_PROFILE_DIR="$HOME/.local/share/konsole"
+mkdir -p "$KONSOLE_PROFILE_DIR"
+
+cat > "$KONSOLE_PROFILE_DIR/mine.profile" << 'PROFILE'
+[Appearance]
+ColorScheme=catppuccin-mocha
+Font=JetBrains Mono,9,-1,5,400,0,0,0,0,0,0,0,0,0,0,1
+
+[General]
+Name=mine
+Parent=FALLBACK/
+
+[Scrolling]
+HistoryMode=1
+HistorySize=50000
+ScrollBarPosition=2
+PROFILE
+
+[[ -f ~/.config/konsolerc ]] && \
+    kwriteconfig6 --file konsolerc --group "Desktop Entry" --key DefaultProfile mine.profile
+ok "Konsole profile 写入完毕（Catppuccin Mocha + 50000 行滚动缓冲）"
+
+# ─────────────────────────────────────────────
+# 16. git：配置 delta
+# ─────────────────────────────────────────────
+info "配置 git delta..."
+git config --global core.pager             delta
+git config --global interactive.diffFilter "delta --color-only"
+git config --global delta.navigate         true
+git config --global delta.side-by-side     true
+git config --global delta.line-numbers     true
+git config --global delta.syntax-theme     "Catppuccin Mocha"
+git config --global merge.conflictstyle    zdiff3
+ok "git delta 配置完毕（分栏 diff + Catppuccin Mocha）"
+
+# ─────────────────────────────────────────────
+# 17. tldr 缓存更新
+# ─────────────────────────────────────────────
+if command -v tldr &>/dev/null; then
+    info "更新 tldr 缓存..."
+    tldr --update 2>&1 | grep -q "Successfully" && ok "tldr 缓存更新完毕" || ok "tldr 缓存已是最新"
+fi
+
+# ─────────────────────────────────────────────
 # 完成
 # ─────────────────────────────────────────────
 echo ""
@@ -440,4 +716,5 @@ echo "  3. 系统设置 → 外观 → 光标    → 选择 Catppuccin-Mocha-Mau
 echo "  4. 系统设置 → 窗口装饰        → 选择 Klassy"
 echo "  5. 系统设置 → 字体            → 确认各项已显示 HarmonyOS Sans SC"
 echo "  6. 系统设置 → 输入法          → 添加「Rime」并将其置顶"
-echo "  7. 注销或重启以使所有更改完全生效"
+echo "  7. 开新终端标签页 → 执行 p10k configure 完成提示符向导"
+echo "  8. 注销或重启以使所有更改完全生效"
