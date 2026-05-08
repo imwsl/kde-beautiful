@@ -278,6 +278,53 @@ else
 fi
 
 # ─────────────────────────────────────────────
+# 10. Catppuccin 壁纸（桌面 + 锁屏）
+# ─────────────────────────────────────────────
+WALLPAPER_DIR="$HOME/.local/share/wallpapers/catppuccin"
+mkdir -p "$WALLPAPER_DIR"
+
+DESKTOP_WP="$WALLPAPER_DIR/evening-sky.png"
+LOCK_WP="$WALLPAPER_DIR/dark-cat.png"
+
+if [[ ! -f "$DESKTOP_WP" ]]; then
+    info "下载桌面壁纸（Catppuccin evening-sky）..."
+    curl -L --progress-bar \
+        "https://raw.githubusercontent.com/zhichaoh/catppuccin-wallpapers/main/landscapes/evening-sky.png" \
+        -o "$DESKTOP_WP"
+    ok "桌面壁纸下载完毕"
+else
+    ok "桌面壁纸已存在，跳过下载"
+fi
+
+if [[ ! -f "$LOCK_WP" ]]; then
+    info "下载锁屏壁纸（Catppuccin dark-cat）..."
+    curl -L --progress-bar \
+        "https://raw.githubusercontent.com/zhichaoh/catppuccin-wallpapers/main/minimalistic/dark-cat.png" \
+        -o "$LOCK_WP"
+    ok "锁屏壁纸下载完毕"
+else
+    ok "锁屏壁纸已存在，跳过下载"
+fi
+
+# 桌面壁纸：plasma-apply-wallpaperimage 是 Plasma 6 原生命令
+if command -v plasma-apply-wallpaperimage &>/dev/null; then
+    info "应用桌面壁纸..."
+    plasma-apply-wallpaperimage "$DESKTOP_WP" \
+        && ok "桌面壁纸已应用" \
+        || warn "plasma-apply-wallpaperimage 失败，请在系统设置 → 桌面壁纸中手动选择"
+else
+    warn "plasma-apply-wallpaperimage 未找到，请在系统设置 → 桌面壁纸中手动选择 $DESKTOP_WP"
+fi
+
+# 锁屏壁纸：写入 kscreenlockerrc
+info "配置锁屏壁纸..."
+cat > "$HOME/.config/kscreenlockerrc" << EOF
+[Greeter][Wallpaper][org.kde.image][General]
+Image=file://${LOCK_WP}
+EOF
+ok "锁屏壁纸配置写入完毕（Super+L 可验证）"
+
+# ─────────────────────────────────────────────
 # 完成
 # ─────────────────────────────────────────────
 echo ""
