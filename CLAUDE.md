@@ -35,7 +35,8 @@ shellcheck kde-catppuccin-setup.sh
 7. **Papirus 图标文件夹** — 对所有 Papirus 变体应用 Catppuccin mauve 配色
 8. **KWin 特效** — 通过 `kwriteconfig5` 配置合成器与动画，经由 D-Bus 重载
 9. **Ghostty 配置** — 写入 `~/.config/ghostty/config`，包含 Catppuccin Mocha 主题与 AdwaitaMono 字体
-10. **fcitx5 输入法** — 安装 fcitx5-rime，部署 rime-ice 雾凇拼音（10 候选词、左右 Shift 切换中英），应用 fcitx5-material-color deepPurple 皮肤，写入 `~/.config/plasma-workspace/env/fcitx5.sh` 环境变量
+10. **fcitx5 输入法** — 安装 fcitx5-rime，部署 rime-ice 雾凇拼音（10 候选词、左右 Shift 切换中英），应用 Catppuccin Mocha Mauve 皮肤（背景 80% 不透明），写入 `~/.config/plasma-workspace/env/fcitx5.sh` 环境变量
+11. **Catppuccin 壁纸** — 下载 evening-sky（桌面）与 dark-cat（锁屏），通过 `plasma-apply-wallpaperimage` 应用桌面壁纸，写入 `~/.config/kscreenlockerrc` 设置锁屏壁纸
 
 ## 关键模式
 

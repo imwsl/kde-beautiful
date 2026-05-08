@@ -17,9 +17,11 @@
 | 窗口装饰 | Klassy |
 | 图标 | Papirus-Dark + Catppuccin Mauve 文件夹色 |
 | 登录界面 | Catppuccin Mocha Mauve SDDM 主题 |
+| 字体 | HarmonyOS Sans SC（系统）+ AdwaitaMono Nerd Font（终端） |
 | 终端 | Ghostty + Catppuccin Mocha + AdwaitaMono Nerd Font |
 | 合成器 | KWin 三缓冲、模糊、Magic Lamp 动画等 |
 | 输入法 | fcitx5-rime + 雾凇拼音 + Catppuccin Mocha Mauve 皮肤（80% 不透明） |
+| 壁纸 | Catppuccin evening-sky（桌面）+ dark-cat（锁屏） |
 
 ## 前置条件
 
@@ -44,13 +46,13 @@
 | 工具 | 用途 |
 |------|------|
 | `fc-cache` | 刷新字体缓存（来自 `fontconfig`） |
-| `kwriteconfig5` | 写入 KWin 合成器配置（来自 `kf5-kconfig`） |
+| `kwriteconfig6` | 写入 KDE 字体及 KWin 合成器配置（来自 `kf6-kconfig`） |
 | `lookandfeeltool` | 应用全局主题（来自 `plasma-workspace`） |
 | `dbus-send` | 通知 KWin 重载配置（来自 `dbus`） |
 
 **注意事项**
 
-- 脚本会**直接覆盖** `~/.config/ghostty/config` 和 `~/.config/fcitx5/conf/classicui.conf`，如已有自定义配置请提前备份
+- `~/.config/ghostty/config`、`~/.config/fcitx5/conf/classicui.conf` 等配置文件首次运行时写入；若已存在则跳过，自定义内容不会被覆盖
 - Ghostty 配置中 `shell-integration = zsh`，默认适配 zsh；使用其他 Shell 需安装后手动修改
 - rime-ice 安装前会自动备份原有 Rime 配置至 `~/.local/share/fcitx5/rime.bak.<时间戳>`
 
@@ -73,8 +75,9 @@ chmod +x kde-catppuccin-setup.sh
 2. **系统设置 → 外观 → 图标** → 选择 `Papirus-Dark`
 3. **系统设置 → 外观 → 光标** → 选择 `Catppuccin-Mocha-Mauve-Cursors`
 4. **系统设置 → 窗口装饰** → 选择 `Klassy`
-5. **系统设置 → 输入法** → 添加「Rime」并将其置顶
-6. 注销或重启以使所有更改完全生效
+5. **系统设置 → 字体** → 确认各项已显示 `HarmonyOS Sans SC`
+6. **系统设置 → 输入法** → 添加「Rime」并将其置顶
+7. 注销或重启以使所有更改完全生效
 
 ## 输入法
 

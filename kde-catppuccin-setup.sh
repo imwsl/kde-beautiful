@@ -136,13 +136,18 @@ ok "KDE 字体配置完毕"
 # ─────────────────────────────────────────────
 # 5. Catppuccin KDE 全局主题（Plasma + 配色 + 光标）
 # ─────────────────────────────────────────────
-info "安装 Catppuccin KDE 主题..."
-git clone --depth=1 https://github.com/catppuccin/kde.git "$TMPDIR_SETUP/catppuccin-kde"
-cd "$TMPDIR_SETUP/catppuccin-kde"
-# 参数: 1=Mocha, 4=Mauve, 1=Modern窗口装饰
-./install.sh 1 4 1
-cd - >/dev/null
-ok "Catppuccin KDE 主题安装完毕"
+CATPPUCCIN_THEME_DIR="$HOME/.local/share/plasma/look-and-feel/Catppuccin-Mocha-Mauve"
+if [[ ! -d "$CATPPUCCIN_THEME_DIR" ]]; then
+    info "安装 Catppuccin KDE 主题..."
+    git clone --depth=1 https://github.com/catppuccin/kde.git "$TMPDIR_SETUP/catppuccin-kde"
+    cd "$TMPDIR_SETUP/catppuccin-kde"
+    # 参数: 1=Mocha, 4=Mauve, 1=Modern窗口装饰
+    ./install.sh 1 4 1
+    cd - >/dev/null
+    ok "Catppuccin KDE 主题安装完毕"
+else
+    ok "Catppuccin KDE 主题已安装，跳过"
+fi
 
 info "应用 Catppuccin Mocha Mauve 全局主题..."
 lookandfeeltool -a "Catppuccin-Mocha-Mauve" 2>/dev/null || \
@@ -186,12 +191,12 @@ ok "Papirus 文件夹颜色配置完毕"
 # 8. KWin 合成器与特效
 # ─────────────────────────────────────────────
 info "配置 KWin 合成器与动效..."
-kwriteconfig5 --file kwinrc --group Compositing --key AnimationSpeed 5
-kwriteconfig5 --file kwinrc --group Compositing --key TripleBuffering true
-kwriteconfig5 --file kwinrc --group Compositing --key GLCore true
-kwriteconfig5 --file kwinrc --group Plugins --key blurEnabled true
-kwriteconfig5 --file kwinrc --group Plugins --key magiclampEnabled true
-kwriteconfig5 --file kwinrc --group Plugins --key slideEnabled true
+kwriteconfig6 --file kwinrc --group Compositing --key AnimationSpeed 5
+kwriteconfig6 --file kwinrc --group Compositing --key TripleBuffering true
+kwriteconfig6 --file kwinrc --group Compositing --key GLCore true
+kwriteconfig6 --file kwinrc --group Plugins --key blurEnabled true
+kwriteconfig6 --file kwinrc --group Plugins --key magiclampEnabled true
+kwriteconfig6 --file kwinrc --group Plugins --key slideEnabled true
 
 # 通知 KWin 重新加载配置（桌面会话中运行时有效）
 if dbus-send --session --dest=org.kde.KWin /KWin org.kde.KWin.reconfigure 2>/dev/null; then
@@ -203,9 +208,13 @@ fi
 # ─────────────────────────────────────────────
 # 9. Ghostty 配置
 # ─────────────────────────────────────────────
-info "写入 Ghostty 配置..."
-mkdir -p "$HOME/.config/ghostty"
-cat > "$HOME/.config/ghostty/config" << 'GHOSTTY_EOF'
+GHOSTTY_CONFIG="$HOME/.config/ghostty/config"
+if [[ -f "$GHOSTTY_CONFIG" ]]; then
+    ok "Ghostty 配置已存在，跳过"
+else
+    info "写入 Ghostty 配置..."
+    mkdir -p "$HOME/.config/ghostty"
+    cat > "$GHOSTTY_CONFIG" << 'GHOSTTY_EOF'
 # ── 主题 ────────────────────────────────────────────────────────
 theme = Catppuccin Mocha
 
@@ -252,7 +261,8 @@ keybind = ctrl+equal=increase_font_size:1
 keybind = ctrl+minus=decrease_font_size:1
 keybind = ctrl+zero=reset_font_size
 GHOSTTY_EOF
-ok "Ghostty 配置写入完毕"
+    ok "Ghostty 配置写入完毕"
+fi
 
 # ─────────────────────────────────────────────
 # 10. fcitx5 输入法 + rime-ice + Catppuccin 主题
@@ -268,14 +278,20 @@ sudo dnf install -y \
     librime-lua
 ok "fcitx5 安装完毕"
 
-# 写入 KDE Plasma 自动加载的环境变量，确保 GTK/Qt 应用使用 fcitx5
-mkdir -p "$HOME/.config/plasma-workspace/env"
-cat > "$HOME/.config/plasma-workspace/env/fcitx5.sh" << 'FCITX_EOF'
+FCITX5_ENV="$HOME/.config/plasma-workspace/env/fcitx5.sh"
+if [[ -f "$FCITX5_ENV" ]]; then
+    ok "fcitx5 环境变量配置已存在，跳过"
+else
+    info "写入 fcitx5 环境变量配置..."
+    mkdir -p "$HOME/.config/plasma-workspace/env"
+    cat > "$FCITX5_ENV" << 'FCITX_EOF'
 export INPUT_METHOD=fcitx
 export GTK_IM_MODULE=fcitx
 export QT_IM_MODULE=fcitx
 export XMODIFIERS=@im=fcitx
 FCITX_EOF
+    ok "fcitx5 环境变量配置写入完毕"
+fi
 
 # rime-ice 雾凇拼音
 RIME_DIR="$HOME/.local/share/fcitx5/rime"
@@ -318,9 +334,13 @@ else
     ok "catppuccin-mocha-mauve 主题已安装，跳过"
 fi
 
-# 写入 classicui.conf 启用主题
-mkdir -p "$HOME/.config/fcitx5/conf"
-cat > "$HOME/.config/fcitx5/conf/classicui.conf" << 'CLASSICUI_EOF'
+CLASSICUI_CONF="$HOME/.config/fcitx5/conf/classicui.conf"
+if [[ -f "$CLASSICUI_CONF" ]]; then
+    ok "fcitx5 界面配置已存在，跳过"
+else
+    info "写入 fcitx5 界面配置..."
+    mkdir -p "$HOME/.config/fcitx5/conf"
+    cat > "$CLASSICUI_CONF" << 'CLASSICUI_EOF'
 Vertical Candidate List=False
 WheelForPaging=True
 Font="Sans 10"
@@ -339,6 +359,8 @@ PerScreenDPI=False
 ForceWaylandDPI=0
 EnableFractionalScale=True
 CLASSICUI_EOF
+    ok "fcitx5 界面配置写入完毕"
+fi
 
 # 在图形会话中重启 fcitx5 使配置生效
 if [[ -n "${DISPLAY:-}${WAYLAND_DISPLAY:-}" ]]; then
@@ -350,7 +372,7 @@ else
 fi
 
 # ─────────────────────────────────────────────
-# 10. Catppuccin 壁纸（桌面 + 锁屏）
+# 11. Catppuccin 壁纸（桌面 + 锁屏）
 # ─────────────────────────────────────────────
 WALLPAPER_DIR="$HOME/.local/share/wallpapers/catppuccin"
 mkdir -p "$WALLPAPER_DIR"
@@ -381,20 +403,27 @@ fi
 # 桌面壁纸：plasma-apply-wallpaperimage 是 Plasma 6 原生命令
 if command -v plasma-apply-wallpaperimage &>/dev/null; then
     info "应用桌面壁纸..."
-    plasma-apply-wallpaperimage "$DESKTOP_WP" \
-        && ok "桌面壁纸已应用" \
-        || warn "plasma-apply-wallpaperimage 失败，请在系统设置 → 桌面壁纸中手动选择"
+    if plasma-apply-wallpaperimage "$DESKTOP_WP"; then
+        ok "桌面壁纸已应用"
+    else
+        warn "plasma-apply-wallpaperimage 失败，请在系统设置 → 桌面壁纸中手动选择"
+    fi
 else
     warn "plasma-apply-wallpaperimage 未找到，请在系统设置 → 桌面壁纸中手动选择 $DESKTOP_WP"
 fi
 
 # 锁屏壁纸：写入 kscreenlockerrc
-info "配置锁屏壁纸..."
-cat > "$HOME/.config/kscreenlockerrc" << EOF
+KSCREENLOCKER_CONF="$HOME/.config/kscreenlockerrc"
+if [[ -f "$KSCREENLOCKER_CONF" ]]; then
+    ok "锁屏壁纸配置已存在，跳过"
+else
+    info "配置锁屏壁纸..."
+    cat > "$KSCREENLOCKER_CONF" << EOF
 [Greeter][Wallpaper][org.kde.image][General]
 Image=file://${LOCK_WP}
 EOF
-ok "锁屏壁纸配置写入完毕（Super+L 可验证）"
+    ok "锁屏壁纸配置写入完毕（Super+L 可验证）"
+fi
 
 # ─────────────────────────────────────────────
 # 完成
