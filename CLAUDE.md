@@ -24,7 +24,7 @@ shellcheck kde-catppuccin-setup.sh
 
 ## 架构
 
-脚本按顺序执行 10 个相互独立的安装阶段：
+脚本按顺序执行 16 个相互独立的安装阶段：
 
 1. **系统软件包** — 通过 `dnf` 安装 Kvantum、Klassy、Papirus、字体、git、curl
 2. **Ghostty 终端** — 若尚未安装，从 COPR 源安装
@@ -33,9 +33,15 @@ shellcheck kde-catppuccin-setup.sh
 5. **Catppuccin KDE 主题** — 克隆上游仓库，以 Mocha/Mauve/Modern 参数运行其安装器，通过 `lookandfeeltool` 应用主题
 6. **SDDM 登录主题** — 下载预构建包，安装至 `/usr/share/sddm/themes/`，写入 `/etc/sddm.conf.d/theme.conf`
 7. **Papirus 图标文件夹** — 对所有 Papirus 变体应用 Catppuccin mauve 配色
-8. **KWin 特效** — 通过 `kwriteconfig5` 配置合成器与动画，经由 D-Bus 重载
+8. **KWin 特效** — 通过 `kwriteconfig6` 配置合成器（blur、magiclamp 250ms、zoom），禁用 slide，经由 D-Bus 重载
 9. **Ghostty 配置** — 写入 `~/.config/ghostty/config`，包含 Catppuccin Mocha 主题与 AdwaitaMono 字体
-10. **fcitx5 输入法** — 安装 fcitx5-rime，部署 rime-ice 雾凇拼音（10 候选词、左右 Shift 切换中英），应用 fcitx5-material-color deepPurple 皮肤，写入 `~/.config/plasma-workspace/env/fcitx5.sh` 环境变量
+10. **fcitx5 输入法** — 安装 fcitx5-rime，部署 rime-ice 雾凇拼音（10 候选词、左右 Shift 切换中英），应用 catppuccin-mocha-mauve 皮肤，写入 `~/.config/plasma-workspace/env/fcitx5.sh` 环境变量
+11. **现代 CLI 工具** — 通过 `dnf` 安装 lsd、bat、btop、fzf
+12. **btop 主题** — 写入 `~/.config/btop/themes/catppuccin_mocha.theme` 与 `btop.conf`，使用 braille 图形
+13. **fastfetch 配置** — 写入 `~/.config/fastfetch/config.jsonc`，Fedora logo + Catppuccin Mocha 十六进制配色 + 彩色圆点色板
+14. **Zsh 别名 & fzf** — 幂等追加 lsd/bat 别名与 fzf Catppuccin Mocha 配色及 zsh 集成到 `~/.zshrc`
+15. **P10k CPU load + RAM** — `sed` 取消注释 `~/.p10k.zsh` 中的 `load` 和 `ram` 段，右侧 prompt 显示实时负载
+16. **Neovim 插件** — 追加 which-key.nvim（快捷键面板）、mini.animate（平滑动画）、todo-comments.nvim（注释高亮）到 `~/.config/nvim/lua/plugins/ui.lua`
 
 ## 关键模式
 

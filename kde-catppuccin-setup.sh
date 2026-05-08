@@ -186,12 +186,14 @@ ok "Papirus 文件夹颜色配置完毕"
 # 8. KWin 合成器与特效
 # ─────────────────────────────────────────────
 info "配置 KWin 合成器与动效..."
-kwriteconfig5 --file kwinrc --group Compositing --key AnimationSpeed 5
-kwriteconfig5 --file kwinrc --group Compositing --key TripleBuffering true
-kwriteconfig5 --file kwinrc --group Compositing --key GLCore true
-kwriteconfig5 --file kwinrc --group Plugins --key blurEnabled true
-kwriteconfig5 --file kwinrc --group Plugins --key magiclampEnabled true
-kwriteconfig5 --file kwinrc --group Plugins --key slideEnabled true
+kwriteconfig6 --file kwinrc --group Compositing --key AnimationSpeed 3
+kwriteconfig6 --file kwinrc --group Compositing --key TripleBuffering true
+kwriteconfig6 --file kwinrc --group Compositing --key GLCore true
+kwriteconfig6 --file kwinrc --group Plugins --key blurEnabled true
+kwriteconfig6 --file kwinrc --group Plugins --key magiclampEnabled true
+kwriteconfig6 --file kwinrc --group Plugins --key zoomEnabled true
+kwriteconfig6 --file kwinrc --group Plugins --key slideEnabled false
+kwriteconfig6 --file kwinrc --group Effect-MagicLamp --key AnimationDuration 250
 
 # 通知 KWin 重新加载配置（桌面会话中运行时有效）
 if dbus-send --session --dest=org.kde.KWin /KWin org.kde.KWin.reconfigure 2>/dev/null; then
@@ -350,6 +352,282 @@ else
 fi
 
 # ─────────────────────────────────────────────
+# 11. 现代 CLI 工具（lsd / bat / btop / fzf）
+# ─────────────────────────────────────────────
+info "安装现代 CLI 工具..."
+sudo dnf install -y lsd bat btop fzf
+ok "lsd / bat / btop / fzf 安装完毕"
+
+# ─────────────────────────────────────────────
+# 12. btop Catppuccin Mocha 主题
+# ─────────────────────────────────────────────
+info "配置 btop Catppuccin Mocha 主题..."
+mkdir -p "$HOME/.config/btop/themes"
+
+cat > "$HOME/.config/btop/themes/catppuccin_mocha.theme" << 'BTOP_THEME_EOF'
+# Catppuccin Mocha theme for btop++
+theme[main_bg]="#1e1e2e"
+theme[main_fg]="#cdd6f4"
+theme[title]="#cdd6f4"
+theme[hi_fg]="#cba6f7"
+theme[selected_bg]="#313244"
+theme[selected_fg]="#cdd6f4"
+theme[inactive_fg]="#6c7086"
+theme[graph_text]="#cdd6f4"
+theme[meter_bg]="#313244"
+theme[proc_misc]="#cba6f7"
+theme[cpu_box]="#89b4fa"
+theme[mem_box]="#a6e3a1"
+theme[net_box]="#89dceb"
+theme[proc_box]="#cba6f7"
+theme[div_line]="#45475a"
+theme[temp_start]="#a6e3a1"
+theme[temp_mid]="#f9e2af"
+theme[temp_end]="#f38ba8"
+theme[cpu_start]="#89b4fa"
+theme[cpu_mid]="#cba6f7"
+theme[cpu_end]="#f38ba8"
+theme[free_start]="#a6e3a1"
+theme[free_mid]="#f9e2af"
+theme[free_end]="#f38ba8"
+theme[cached_start]="#89dceb"
+theme[cached_mid]="#89b4fa"
+theme[cached_end]="#cba6f7"
+theme[available_start]="#a6e3a1"
+theme[available_mid]="#89b4fa"
+theme[available_end]="#cba6f7"
+theme[used_start]="#f9e2af"
+theme[used_mid]="#fab387"
+theme[used_end]="#f38ba8"
+theme[download_start]="#89dceb"
+theme[download_mid]="#89b4fa"
+theme[download_end]="#cba6f7"
+theme[upload_start]="#a6e3a1"
+theme[upload_mid]="#f9e2af"
+theme[upload_end]="#f38ba8"
+theme[process_start]="#a6e3a1"
+theme[process_mid]="#f9e2af"
+theme[process_end]="#f38ba8"
+BTOP_THEME_EOF
+
+cat > "$HOME/.config/btop/btop.conf" << 'BTOP_CONF_EOF'
+color_theme = "catppuccin_mocha"
+theme_background = True
+truecolor = True
+force_tty = False
+graph_symbol = "braille"
+graph_symbol_cpu = "default"
+graph_symbol_mem = "default"
+graph_symbol_net = "default"
+graph_symbol_proc = "default"
+shown_boxes = "cpu mem net proc"
+update_ms = 2000
+proc_sorting = "cpu lazy"
+proc_reversed = False
+proc_tree = False
+proc_colors = True
+proc_gradient = True
+proc_per_core = False
+proc_mem_bytes = True
+proc_cpu_graphs = True
+proc_info_smaps = False
+proc_left = False
+proc_filter_kernel = False
+proc_aggregate = False
+cpu_graph_upper = "total"
+cpu_graph_lower = "total"
+cpu_invert_lower = True
+cpu_single_graph = False
+cpu_bottom = False
+mem_graphs = True
+mem_below_net = False
+zfs_arc_cached = True
+net_download = 100
+net_upload = 100
+net_auto = True
+net_sync = False
+net_iface = ""
+show_battery = True
+selected_battery = "Auto"
+show_battery_watts = True
+log_level = "WARNING"
+BTOP_CONF_EOF
+ok "btop 主题配置完毕"
+
+# ─────────────────────────────────────────────
+# 13. fastfetch 自定义配置
+# ─────────────────────────────────────────────
+info "配置 fastfetch..."
+mkdir -p "$HOME/.config/fastfetch"
+cat > "$HOME/.config/fastfetch/config.jsonc" << 'FASTFETCH_EOF'
+{
+  "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
+  "logo": {
+    "type": "builtin",
+    "source": "fedora_small",
+    "color": { "1": "blue", "2": "white" },
+    "padding": { "top": 1, "left": 2, "right": 2 }
+  },
+  "display": {
+    "separator": "  ",
+    "color": { "keys": "#cba6f7", "title": "#cba6f7" }
+  },
+  "modules": [
+    {
+      "type": "title",
+      "format": "{user-name}@{host-name}",
+      "color": { "user": "#cba6f7", "at": "#6c7086", "host": "#f5c2e7" }
+    },
+    "separator",
+    { "type": "os",       "key": " OS",        "keyColor": "#89b4fa" },
+    { "type": "kernel",   "key": " Kernel",    "keyColor": "#89b4fa" },
+    { "type": "uptime",   "key": "󱎫 Uptime",   "keyColor": "#a6e3a1" },
+    { "type": "packages", "key": "󰏖 Packages", "keyColor": "#a6e3a1" },
+    { "type": "shell",    "key": " Shell",     "keyColor": "#f9e2af" },
+    { "type": "terminal", "key": " Terminal",  "keyColor": "#f9e2af" },
+    { "type": "de",       "key": " DE/WM",    "keyColor": "#fab387" },
+    { "type": "wm",       "key": "󰖯 WM",       "keyColor": "#fab387" },
+    { "type": "theme",    "key": " Theme",    "keyColor": "#f5c2e7" },
+    { "type": "icons",    "key": " Icons",    "keyColor": "#f5c2e7" },
+    { "type": "font",     "key": " Font",     "keyColor": "#f5c2e7" },
+    { "type": "cursor",   "key": " Cursor",   "keyColor": "#f5c2e7" },
+    "break",
+    { "type": "cpu",    "key": " CPU",    "keyColor": "#f38ba8", "temp": true },
+    { "type": "gpu",    "key": "󰿵 GPU",    "keyColor": "#f38ba8", "temp": true },
+    { "type": "memory", "key": " Memory", "keyColor": "#f38ba8" },
+    { "type": "disk",   "key": "󰋊 Disk",   "keyColor": "#f38ba8", "folders": "/" },
+    "break",
+    { "type": "colors", "symbol": "circle" }
+  ]
+}
+FASTFETCH_EOF
+ok "fastfetch 配置写入完毕"
+
+# ─────────────────────────────────────────────
+# 14. Zsh 别名 & fzf Catppuccin 集成
+# ─────────────────────────────────────────────
+ZSHRC="$HOME/.zshrc"
+info "配置 Zsh 别名与 fzf..."
+
+_append_if_absent() {
+    local marker="$1" content="$2"
+    grep -qF "$marker" "$ZSHRC" 2>/dev/null || printf '\n%s\n' "$content" >> "$ZSHRC"
+}
+
+_append_if_absent "alias ls=\"lsd\"" \
+'# lsd
+alias ls="lsd"
+alias ll="lsd -l"
+alias la="lsd -la"
+alias lt="lsd --tree --depth 2"'
+
+_append_if_absent "alias cat=\"bat" \
+'# bat
+alias cat="bat --style=plain"
+alias batl="bat"'
+
+_append_if_absent "FZF_DEFAULT_OPTS" \
+'# fzf - Catppuccin Mocha
+export FZF_DEFAULT_OPTS=" \
+  --color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8 \
+  --color=fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc \
+  --color=marker:#b4befe,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8 \
+  --color=selected-bg:#45475a \
+  --multi --height=50% --border=rounded --padding=1"
+export FZF_DEFAULT_COMMAND="find . -type f -not -path '"'"'*/\.git/*'"'"'"
+export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+export FZF_ALT_C_OPTS="--preview '"'"'lsd --tree --depth 2 {}'"'"'"
+export FZF_CTRL_T_OPTS="--preview '"'"'bat --style=numbers --color=always {} 2>/dev/null || lsd {}'"'"'"
+source <(fzf --zsh) 2>/dev/null'
+
+ok "Zsh 别名与 fzf 配置完毕"
+
+# ─────────────────────────────────────────────
+# 15. P10k 右侧显示 CPU load 与空闲 RAM
+# ─────────────────────────────────────────────
+P10K="$HOME/.p10k.zsh"
+if [[ -f "$P10K" ]]; then
+    info "启用 P10k CPU load + RAM 段..."
+    sed -i 's/^    # load                  # CPU load/    load                   # CPU load/' "$P10K"
+    sed -i 's/^    # ram                   # free RAM/    ram                    # free RAM/' "$P10K"
+    ok "P10k load + ram 已启用"
+else
+    warn "未找到 ~/.p10k.zsh，跳过 P10k 配置"
+fi
+
+# ─────────────────────────────────────────────
+# 16. Neovim 插件（which-key / mini.animate / todo-comments）
+# ─────────────────────────────────────────────
+NVIM_UI="$HOME/.config/nvim/lua/plugins/ui.lua"
+if [[ -f "$NVIM_UI" ]] && ! grep -q "which-key.nvim" "$NVIM_UI"; then
+    info "追加 Neovim 插件：which-key / mini.animate / todo-comments..."
+    # 在文件最后一个 `}` 之前插入新插件块
+    sed -i 's/^}$//' "$NVIM_UI"
+    cat >> "$NVIM_UI" << 'NVIM_EOF'
+
+    -- 快捷键提示面板
+    {
+        "folke/which-key.nvim",
+        event = "VeryLazy",
+        opts = {
+            delay = 500,
+            icons = { mappings = true },
+            win = { border = "rounded" },
+            spec = {
+                { "<leader>f", group = "find" },
+                { "<leader>g", group = "git" },
+                { "<leader>l", group = "lsp" },
+                { "<leader>u", group = "ui" },
+            },
+        },
+    },
+
+    -- 平滑动画（滚动、光标、窗口）
+    {
+        "echasnovski/mini.animate",
+        version = "*",
+        event = "VeryLazy",
+        opts = {
+            scroll = { enable = true, timing = require("mini.animate").gen_timing.linear({ duration = 80, unit = "total" }) },
+            cursor = { enable = true, timing = require("mini.animate").gen_timing.linear({ duration = 80, unit = "total" }) },
+            resize = { enable = true },
+            open   = { enable = false },
+            close  = { enable = false },
+        },
+    },
+
+    -- 高亮 TODO/FIXME/NOTE 注释
+    {
+        "folke/todo-comments.nvim",
+        dependencies = { "nvim-lua/plenary.nvim" },
+        event = "BufReadPost",
+        opts = {
+            signs = true,
+            keywords = {
+                FIX  = { icon = " ", color = "error",   alt = { "FIXME", "BUG", "FIXIT", "ISSUE" } },
+                TODO = { icon = " ", color = "info" },
+                HACK = { icon = " ", color = "warning" },
+                WARN = { icon = " ", color = "warning", alt = { "WARNING", "XXX" } },
+                PERF = { icon = "󱓥 ", alt = { "OPTIM", "PERFORMANCE", "OPTIMIZE" } },
+                NOTE = { icon = "󰍨 ", color = "hint",    alt = { "INFO" } },
+            },
+            highlight = { before = "", keyword = "wide_bg", after = "fg" },
+        },
+        keys = {
+            { "]t", function() require("todo-comments").jump_next() end, desc = "Next TODO" },
+            { "[t", function() require("todo-comments").jump_prev() end, desc = "Prev TODO" },
+        },
+    },
+}
+NVIM_EOF
+    ok "Neovim 插件块追加完毕（下次启动 nvim 自动安装）"
+elif grep -q "which-key.nvim" "$NVIM_UI" 2>/dev/null; then
+    ok "Neovim 插件已存在，跳过"
+else
+    warn "未找到 $NVIM_UI，跳过 Neovim 插件配置"
+fi
+
+# ─────────────────────────────────────────────
 # 完成
 # ─────────────────────────────────────────────
 echo ""
@@ -364,4 +642,5 @@ echo "  3. 系统设置 → 外观 → 光标    → 选择 Catppuccin-Mocha-Mau
 echo "  4. 系统设置 → 窗口装饰        → 选择 Klassy"
 echo "  5. 系统设置 → 字体            → 确认各项已显示 HarmonyOS Sans SC"
 echo "  6. 系统设置 → 输入法          → 添加「Rime」并将其置顶"
-echo "  7. 注销或重启以使所有更改完全生效"
+echo "  7. 新开终端后运行 source ~/.zshrc 使别名生效"
+echo "  8. 注销或重启以使所有更改完全生效"
