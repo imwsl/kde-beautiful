@@ -188,6 +188,22 @@ done
 ok "Papirus 文件夹颜色配置完毕"
 
 # ─────────────────────────────────────────────
+# 7b. Qogir 图标主题
+# ─────────────────────────────────────────────
+QOGIR_ICON_DIR="$HOME/.local/share/icons/Qogir"
+if [[ -d "$QOGIR_ICON_DIR" ]]; then
+    ok "Qogir 图标主题已安装，跳过"
+else
+    info "安装 Qogir 图标主题..."
+    git clone --depth=1 https://github.com/vinceliuice/Qogir-icon-theme.git \
+        "$TMPDIR_SETUP/Qogir-icon-theme"
+    cd "$TMPDIR_SETUP/Qogir-icon-theme"
+    ./install.sh -d "$HOME/.local/share/icons"
+    cd - >/dev/null
+    ok "Qogir 图标主题安装完毕"
+fi
+
+# ─────────────────────────────────────────────
 # 8. KWin 合成器与特效
 # ─────────────────────────────────────────────
 info "配置 KWin 合成器与动效..."
