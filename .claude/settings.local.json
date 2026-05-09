@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git init *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git remote *)",
+      "Bash(git push *)",
+      "Bash(shellcheck *)",
+      "Bash(git -C /home/imwsl/kde-beautiful status)",
+      "Bash(git -C /home/imwsl/kde-beautiful diff)",
+      "Bash(git *)"
+    ]
+  }
+}

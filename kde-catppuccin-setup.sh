@@ -136,13 +136,18 @@ ok "KDE 字体配置完毕"
 # ─────────────────────────────────────────────
 # 5. Catppuccin KDE 全局主题（Plasma + 配色 + 光标）
 # ─────────────────────────────────────────────
-info "安装 Catppuccin KDE 主题..."
-git clone --depth=1 https://github.com/catppuccin/kde.git "$TMPDIR_SETUP/catppuccin-kde"
-cd "$TMPDIR_SETUP/catppuccin-kde"
-# 参数: 1=Mocha, 4=Mauve, 1=Modern窗口装饰
-./install.sh 1 4 1
-cd - >/dev/null
-ok "Catppuccin KDE 主题安装完毕"
+CATPPUCCIN_THEME_DIR="$HOME/.local/share/plasma/look-and-feel/Catppuccin-Mocha-Mauve"
+if [[ ! -d "$CATPPUCCIN_THEME_DIR" ]]; then
+    info "安装 Catppuccin KDE 主题..."
+    git clone --depth=1 https://github.com/catppuccin/kde.git "$TMPDIR_SETUP/catppuccin-kde"
+    cd "$TMPDIR_SETUP/catppuccin-kde"
+    # 参数: 1=Mocha, 4=Mauve, 1=Modern窗口装饰
+    ./install.sh 1 4 1
+    cd - >/dev/null
+    ok "Catppuccin KDE 主题安装完毕"
+else
+    ok "Catppuccin KDE 主题已安装，跳过"
+fi
 
 info "应用 Catppuccin Mocha Mauve 全局主题..."
 lookandfeeltool -a "Catppuccin-Mocha-Mauve" 2>/dev/null || \
@@ -186,17 +191,19 @@ ok "Papirus 文件夹颜色配置完毕"
 # 8. KWin 合成器与特效
 # ─────────────────────────────────────────────
 info "配置 KWin 合成器与动效..."
-kwriteconfig6 --file kwinrc --group Compositing --key AnimationSpeed 3
+kwriteconfig6 --file kwinrc --group Compositing --key AnimationSpeed 5
 kwriteconfig6 --file kwinrc --group Compositing --key TripleBuffering true
 kwriteconfig6 --file kwinrc --group Compositing --key GLCore true
 kwriteconfig6 --file kwinrc --group Plugins --key blurEnabled true
 kwriteconfig6 --file kwinrc --group Plugins --key magiclampEnabled true
-kwriteconfig6 --file kwinrc --group Plugins --key zoomEnabled true
-kwriteconfig6 --file kwinrc --group Plugins --key slideEnabled false
-kwriteconfig6 --file kwinrc --group Effect-MagicLamp --key AnimationDuration 250
+kwriteconfig6 --file kwinrc --group Plugins --key slideEnabled true
+kwriteconfig6 --file kwinrc --group Plugins --key wobblywindowsEnabled false
+kwriteconfig6 --file kdeglobals --group KDE --key AnimationDurationFactor 0.5
 
 # 通知 KWin 重新加载配置（桌面会话中运行时有效）
-if dbus-send --session --dest=org.kde.KWin /KWin org.kde.KWin.reconfigure 2>/dev/null; then
+if DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u)/bus" \
+   dbus-send --session --dest=org.kde.KWin --type=method_call \
+   /KWin org.kde.KWin.reconfigure 2>/dev/null; then
     ok "KWin 已重新加载配置"
 else
     warn "KWin 重载跳过（非图形会话），重启后生效"
@@ -205,9 +212,13 @@ fi
 # ─────────────────────────────────────────────
 # 9. Ghostty 配置
 # ─────────────────────────────────────────────
-info "写入 Ghostty 配置..."
-mkdir -p "$HOME/.config/ghostty"
-cat > "$HOME/.config/ghostty/config" << 'GHOSTTY_EOF'
+GHOSTTY_CONFIG="$HOME/.config/ghostty/config"
+if [[ -f "$GHOSTTY_CONFIG" ]]; then
+    ok "Ghostty 配置已存在，跳过"
+else
+    info "写入 Ghostty 配置..."
+    mkdir -p "$HOME/.config/ghostty"
+    cat > "$GHOSTTY_CONFIG" << 'GHOSTTY_EOF'
 # ── 主题 ────────────────────────────────────────────────────────
 theme = Catppuccin Mocha
 
@@ -254,7 +265,8 @@ keybind = ctrl+equal=increase_font_size:1
 keybind = ctrl+minus=decrease_font_size:1
 keybind = ctrl+zero=reset_font_size
 GHOSTTY_EOF
-ok "Ghostty 配置写入完毕"
+    ok "Ghostty 配置写入完毕"
+fi
 
 # ─────────────────────────────────────────────
 # 10. fcitx5 输入法 + rime-ice + Catppuccin 主题
@@ -270,14 +282,20 @@ sudo dnf install -y \
     librime-lua
 ok "fcitx5 安装完毕"
 
-# 写入 KDE Plasma 自动加载的环境变量，确保 GTK/Qt 应用使用 fcitx5
-mkdir -p "$HOME/.config/plasma-workspace/env"
-cat > "$HOME/.config/plasma-workspace/env/fcitx5.sh" << 'FCITX_EOF'
+FCITX5_ENV="$HOME/.config/plasma-workspace/env/fcitx5.sh"
+if [[ -f "$FCITX5_ENV" ]]; then
+    ok "fcitx5 环境变量配置已存在，跳过"
+else
+    info "写入 fcitx5 环境变量配置..."
+    mkdir -p "$HOME/.config/plasma-workspace/env"
+    cat > "$FCITX5_ENV" << 'FCITX_EOF'
 export INPUT_METHOD=fcitx
 export GTK_IM_MODULE=fcitx
 export QT_IM_MODULE=fcitx
 export XMODIFIERS=@im=fcitx
 FCITX_EOF
+    ok "fcitx5 环境变量配置写入完毕"
+fi
 
 # rime-ice 雾凇拼音
 RIME_DIR="$HOME/.local/share/fcitx5/rime"
@@ -320,9 +338,13 @@ else
     ok "catppuccin-mocha-mauve 主题已安装，跳过"
 fi
 
-# 写入 classicui.conf 启用主题
-mkdir -p "$HOME/.config/fcitx5/conf"
-cat > "$HOME/.config/fcitx5/conf/classicui.conf" << 'CLASSICUI_EOF'
+CLASSICUI_CONF="$HOME/.config/fcitx5/conf/classicui.conf"
+if [[ -f "$CLASSICUI_CONF" ]]; then
+    ok "fcitx5 界面配置已存在，跳过"
+else
+    info "写入 fcitx5 界面配置..."
+    mkdir -p "$HOME/.config/fcitx5/conf"
+    cat > "$CLASSICUI_CONF" << 'CLASSICUI_EOF'
 Vertical Candidate List=False
 WheelForPaging=True
 Font="Sans 10"
@@ -341,6 +363,8 @@ PerScreenDPI=False
 ForceWaylandDPI=0
 EnableFractionalScale=True
 CLASSICUI_EOF
+    ok "fcitx5 界面配置写入完毕"
+fi
 
 # 在图形会话中重启 fcitx5 使配置生效
 if [[ -n "${DISPLAY:-}${WAYLAND_DISPLAY:-}" ]]; then
@@ -352,14 +376,78 @@ else
 fi
 
 # ─────────────────────────────────────────────
-# 11. 现代 CLI 工具（lsd / bat / btop / fzf）
+# 11. Catppuccin 壁纸（桌面 + 锁屏）
 # ─────────────────────────────────────────────
-info "安装现代 CLI 工具..."
-sudo dnf install -y lsd bat btop fzf
-ok "lsd / bat / btop / fzf 安装完毕"
+WALLPAPER_DIR="$HOME/.local/share/wallpapers/catppuccin"
+mkdir -p "$WALLPAPER_DIR"
+
+DESKTOP_WP="$WALLPAPER_DIR/evening-sky.png"
+LOCK_WP="$WALLPAPER_DIR/dark-cat.png"
+
+if [[ ! -f "$DESKTOP_WP" ]]; then
+    info "下载桌面壁纸（Catppuccin evening-sky）..."
+    curl -L --progress-bar \
+        "https://raw.githubusercontent.com/zhichaoh/catppuccin-wallpapers/main/landscapes/evening-sky.png" \
+        -o "$DESKTOP_WP"
+    ok "桌面壁纸下载完毕"
+else
+    ok "桌面壁纸已存在，跳过下载"
+fi
+
+if [[ ! -f "$LOCK_WP" ]]; then
+    info "下载锁屏壁纸（Catppuccin dark-cat）..."
+    curl -L --progress-bar \
+        "https://raw.githubusercontent.com/zhichaoh/catppuccin-wallpapers/main/minimalistic/dark-cat.png" \
+        -o "$LOCK_WP"
+    ok "锁屏壁纸下载完毕"
+else
+    ok "锁屏壁纸已存在，跳过下载"
+fi
+
+# 桌面壁纸：plasma-apply-wallpaperimage 是 Plasma 6 原生命令
+if command -v plasma-apply-wallpaperimage &>/dev/null; then
+    info "应用桌面壁纸..."
+    if plasma-apply-wallpaperimage "$DESKTOP_WP"; then
+        ok "桌面壁纸已应用"
+    else
+        warn "plasma-apply-wallpaperimage 失败，请在系统设置 → 桌面壁纸中手动选择"
+    fi
+else
+    warn "plasma-apply-wallpaperimage 未找到，请在系统设置 → 桌面壁纸中手动选择 $DESKTOP_WP"
+fi
+
+# 锁屏壁纸：写入 kscreenlockerrc
+KSCREENLOCKER_CONF="$HOME/.config/kscreenlockerrc"
+if [[ -f "$KSCREENLOCKER_CONF" ]]; then
+    ok "锁屏壁纸配置已存在，跳过"
+else
+    info "配置锁屏壁纸..."
+    cat > "$KSCREENLOCKER_CONF" << EOF
+[Greeter][Wallpaper][org.kde.image][General]
+Image=file://${LOCK_WP}
+EOF
+    ok "锁屏壁纸配置写入完毕（Super+L 可验证）"
+fi
 
 # ─────────────────────────────────────────────
-# 12. btop Catppuccin Mocha 主题
+# 12. 现代 CLI 工具
+# ─────────────────────────────────────────────
+info "安装现代 CLI 工具..."
+CLI_PKGS=(fd-find fzf eza zoxide git-delta procs duf tealdeer hyperfine btop ncdu)
+CLI_MISSING=()
+for pkg in "${CLI_PKGS[@]}"; do
+    rpm -q "$pkg" &>/dev/null || CLI_MISSING+=("$pkg")
+done
+
+if [[ ${#CLI_MISSING[@]} -eq 0 ]]; then
+    ok "所有 CLI 工具已安装，跳过"
+else
+    sudo dnf install -y "${CLI_MISSING[@]}"
+    ok "CLI 工具安装完毕：${CLI_MISSING[*]}"
+fi
+
+# ─────────────────────────────────────────────
+# 13. btop Catppuccin Mocha 主题
 # ─────────────────────────────────────────────
 info "配置 btop Catppuccin Mocha 主题..."
 mkdir -p "$HOME/.config/btop/themes"
@@ -455,113 +543,258 @@ BTOP_CONF_EOF
 ok "btop 主题配置完毕"
 
 # ─────────────────────────────────────────────
-# 13. fastfetch 自定义配置
+# 14. zsh：插件 + powerlevel10k + zshrc
 # ─────────────────────────────────────────────
-info "配置 fastfetch..."
-mkdir -p "$HOME/.config/fastfetch"
-cat > "$HOME/.config/fastfetch/config.jsonc" << 'FASTFETCH_EOF'
+info "配置 zsh..."
+OMZ_CUSTOM="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}"
+
+_clone_if_missing() {
+    local name="$1" url="$2" dest="$3"
+    if [[ -d "$dest" ]]; then
+        ok "zsh 插件 ${name} 已安装，跳过"
+    else
+        git clone --depth=1 "$url" "$dest"
+        ok "zsh 插件 ${name} 安装完毕"
+    fi
+}
+
+_clone_if_missing "zsh-autosuggestions" \
+    "https://github.com/zsh-users/zsh-autosuggestions" \
+    "$OMZ_CUSTOM/plugins/zsh-autosuggestions"
+
+_clone_if_missing "zsh-syntax-highlighting" \
+    "https://github.com/zsh-users/zsh-syntax-highlighting" \
+    "$OMZ_CUSTOM/plugins/zsh-syntax-highlighting"
+
+_clone_if_missing "powerlevel10k" \
+    "https://github.com/romkatv/powerlevel10k" \
+    "$OMZ_CUSTOM/themes/powerlevel10k"
+
+[[ -f ~/.zshrc ]] && cp ~/.zshrc ~/.zshrc.bak && info "已备份原有 ~/.zshrc 至 ~/.zshrc.bak"
+
+cat > ~/.zshrc << 'ZSHRC'
+# p10k instant prompt — must be at the very top
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+fi
+
+fastfetch
+
+export ZSH="$HOME/.oh-my-zsh"
+ZSH_THEME="powerlevel10k/powerlevel10k"
+
+# OMZ performance
+DISABLE_UNTRACKED_FILES_DIRTY="true"
+ZSH_COMPDUMP="$ZSH/cache/.zcompdump"
+zstyle ':omz:update' mode disabled
+
+plugins=(git zsh-autosuggestions zsh-syntax-highlighting)
+
+source $ZSH/oh-my-zsh.sh
+
+# PATH
+export PATH="$HOME/.opencode/bin:$HOME/.local/bin:$PATH:$HOME/.lmstudio/bin"
+[[ -f "$HOME/.local/bin/env" ]] && . "$HOME/.local/bin/env"
+
+# env
+export EDITOR=vim
+export MANPAGER="sh -c 'col -bx | bat -l man -p'"
+export BAT_THEME="Catppuccin Mocha"
+export FZF_DEFAULT_COMMAND="fd --type f --hidden --follow --exclude .git"
+export FZF_DEFAULT_OPTS="
+  --color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8
+  --color=fg:#cdd6f4,header:#f38ba8,info:#cba4f7,pointer:#f5e0dc
+  --color=marker:#b4befe,fg+:#cdd6f4,prompt:#cba4f7,hl+:#f38ba8
+  --color=selected-bg:#45475a
+  --multi --height 50% --border rounded
+"
+
+# history
+HISTSIZE=50000
+SAVEHIST=50000
+setopt HIST_IGNORE_DUPS HIST_IGNORE_SPACE HIST_REDUCE_BLANKS SHARE_HISTORY
+
+# zsh options
+setopt AUTO_CD
+setopt NO_BEEP
+setopt GLOB_DOTS
+
+# autosuggestions
+ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=#6c7086"
+ZSH_AUTOSUGGEST_STRATEGY=(history completion)
+
+# ── tool integrations ────────────────────────────────────────────────────────
+
+eval "$(zoxide init zsh)"
+source <(fzf --zsh)
+
+# ── aliases ──────────────────────────────────────────────────────────────────
+
+alias ls="eza --icons --group-directories-first"
+alias ll="eza -lh --icons --group-directories-first --git"
+alias la="eza -lAh --icons --group-directories-first --git"
+alias lt="eza --tree --icons --level=2"
+alias lta="eza --tree --icons --level=2 -a"
+
+alias cat="bat --paging=never"
+alias grep="rg"
+alias find="fd"
+alias df="duf"
+alias du="du -sh"
+alias top="btop"
+alias ps="procs"
+alias diff="delta"
+
+alias cls="clear"
+alias edz="vim ~/.zshrc"
+alias srz="source ~/.zshrc"
+alias ip="ip -c"
+alias tldr="tldr --color"
+
+alias fcd='cd "$(fd --type d | fzf)"'
+alias fcat='bat "$(fd --type f | fzf)"'
+alias fkill='procs | fzf | awk "{print $1}" | xargs kill'
+
+# p10k config (run `p10k configure` to regenerate)
+[[ -f ~/.p10k.zsh ]] && source ~/.p10k.zsh
+ZSHRC
+
+ok "~/.zshrc 写入完毕"
+
+# ─────────────────────────────────────────────
+# 15. fastfetch 配置
+# ─────────────────────────────────────────────
+info "写入 fastfetch 配置..."
+mkdir -p ~/.config/fastfetch
+
+# 自动检测 WiFi 接口前缀
+_WIFI_IF=$(ip -br link | awk '$1 ~ /^wl/ {print $1; exit}')
+_WIFI_PREFIX="${_WIFI_IF:0:3}"
+
+cat > ~/.config/fastfetch/config.jsonc << FFEOF
 {
-  "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
+  "\$schema": "https://github.com/fastfetch-cli/fastfetch/raw/master/doc/json_schema.json",
+
   "logo": {
-    "type": "builtin",
-    "source": "fedora_small",
-    "color": { "1": "blue", "2": "white" },
-    "padding": { "top": 1, "left": 2, "right": 2 }
+    "source": "Fedora",
+    "color": {
+      "1": "38;2;137;180;250",
+      "2": "38;2;203;166;247"
+    },
+    "padding": { "top": 1, "right": 2 }
   },
+
   "display": {
     "separator": "  ",
-    "color": { "keys": "#cba6f7", "title": "#cba6f7" }
+    "color": {
+      "keys":      "38;2;203;166;247",
+      "title":     "38;2;203;166;247",
+      "separator": "38;2;88;91;112"
+    },
+    "key": { "type": "icon", "paddingLeft": 1 },
+    "percent": { "type": ["bar", "num"], "ndigits": 0 },
+    "bar": {
+      "char": { "elapsed": "█", "total": "░" },
+      "border": { "left": "", "right": "" },
+      "color": { "elapsed": "38;2;137;180;250", "total": "38;2;49;50;68" },
+      "width": 10
+    }
   },
+
   "modules": [
     {
       "type": "title",
-      "format": "{user-name}@{host-name}",
-      "color": { "user": "#cba6f7", "at": "#6c7086", "host": "#f5c2e7" }
+      "color": {
+        "user": "1;38;2;166;227;161",
+        "at":   "38;2;88;91;112",
+        "host": "1;38;2;137;180;250"
+      }
     },
-    "separator",
-    { "type": "os",       "key": " OS",        "keyColor": "#89b4fa" },
-    { "type": "kernel",   "key": " Kernel",    "keyColor": "#89b4fa" },
-    { "type": "uptime",   "key": "󱎫 Uptime",   "keyColor": "#a6e3a1" },
-    { "type": "packages", "key": "󰏖 Packages", "keyColor": "#a6e3a1" },
-    { "type": "shell",    "key": " Shell",     "keyColor": "#f9e2af" },
-    { "type": "terminal", "key": " Terminal",  "keyColor": "#f9e2af" },
-    { "type": "de",       "key": " DE/WM",    "keyColor": "#fab387" },
-    { "type": "wm",       "key": "󰖯 WM",       "keyColor": "#fab387" },
-    { "type": "theme",    "key": " Theme",    "keyColor": "#f5c2e7" },
-    { "type": "icons",    "key": " Icons",    "keyColor": "#f5c2e7" },
-    { "type": "font",     "key": " Font",     "keyColor": "#f5c2e7" },
-    { "type": "cursor",   "key": " Cursor",   "keyColor": "#f5c2e7" },
+    { "type": "separator", "string": "─────────────────────────────────────────────" },
+
+    { "type": "os" },
+    { "type": "kernel" },
+    { "type": "host" },
+    { "type": "uptime" },
+    { "type": "packages" },
     "break",
-    { "type": "cpu",    "key": " CPU",    "keyColor": "#f38ba8", "temp": true },
-    { "type": "gpu",    "key": "󰿵 GPU",    "keyColor": "#f38ba8", "temp": true },
-    { "type": "memory", "key": " Memory", "keyColor": "#f38ba8" },
-    { "type": "disk",   "key": "󰋊 Disk",   "keyColor": "#f38ba8", "folders": "/" },
+
+    { "type": "display" },
+    { "type": "de" },
+    { "type": "wm" },
+    { "type": "theme" },
+    { "type": "icons" },
+    { "type": "cursor" },
+    { "type": "terminal" },
+    { "type": "shell" },
+    { "type": "font" },
     "break",
-    { "type": "colors", "symbol": "circle" }
+
+    { "type": "cpu", "showPeCoreCount": true, "temp": true },
+    { "type": "gpu", "hideType": "integrated", "temp": true },
+    { "type": "memory" },
+    { "type": "disk", "folders": "/" },
+    {
+      "type": "localip",
+      "showIpv4": true,
+      "showIpv6": false,
+      "showPrefixLen": false,
+      "defaultRouteOnly": false,
+      "namePrefix": "${_WIFI_PREFIX}"
+    },
+    "break",
+    "colors"
   ]
 }
-FASTFETCH_EOF
-ok "fastfetch 配置写入完毕"
+FFEOF
+
+ok "fastfetch 配置写入完毕（网络接口前缀：${_WIFI_PREFIX}*）"
 
 # ─────────────────────────────────────────────
-# 14. Zsh 别名 & fzf Catppuccin 集成
+# 16. Konsole 配置
 # ─────────────────────────────────────────────
-ZSHRC="$HOME/.zshrc"
-info "配置 Zsh 别名与 fzf..."
+info "配置 Konsole..."
+KONSOLE_PROFILE_DIR="$HOME/.local/share/konsole"
+mkdir -p "$KONSOLE_PROFILE_DIR"
 
-_append_if_absent() {
-    local marker="$1" content="$2"
-    grep -qF "$marker" "$ZSHRC" 2>/dev/null || printf '\n%s\n' "$content" >> "$ZSHRC"
-}
+cat > "$KONSOLE_PROFILE_DIR/mine.profile" << 'PROFILE'
+[Appearance]
+ColorScheme=catppuccin-mocha
+Font=JetBrains Mono,9,-1,5,400,0,0,0,0,0,0,0,0,0,0,1
 
-_append_if_absent "alias ls=\"lsd\"" \
-'# lsd
-alias ls="lsd"
-alias ll="lsd -l"
-alias la="lsd -la"
-alias lt="lsd --tree --depth 2"'
+[General]
+Name=mine
+Parent=FALLBACK/
 
-_append_if_absent "alias cat=\"bat" \
-'# bat
-alias cat="bat --style=plain"
-alias batl="bat"'
+[Scrolling]
+HistoryMode=1
+HistorySize=50000
+ScrollBarPosition=2
+PROFILE
 
-_append_if_absent "FZF_DEFAULT_OPTS" \
-'# fzf - Catppuccin Mocha
-export FZF_DEFAULT_OPTS=" \
-  --color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8 \
-  --color=fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc \
-  --color=marker:#b4befe,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8 \
-  --color=selected-bg:#45475a \
-  --multi --height=50% --border=rounded --padding=1"
-export FZF_DEFAULT_COMMAND="find . -type f -not -path '"'"'*/\.git/*'"'"'"
-export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
-export FZF_ALT_C_OPTS="--preview '"'"'lsd --tree --depth 2 {}'"'"'"
-export FZF_CTRL_T_OPTS="--preview '"'"'bat --style=numbers --color=always {} 2>/dev/null || lsd {}'"'"'"
-source <(fzf --zsh) 2>/dev/null'
-
-ok "Zsh 别名与 fzf 配置完毕"
+[[ -f ~/.config/konsolerc ]] && \
+    kwriteconfig6 --file konsolerc --group "Desktop Entry" --key DefaultProfile mine.profile
+ok "Konsole profile 写入完毕（Catppuccin Mocha + 50000 行滚动缓冲）"
 
 # ─────────────────────────────────────────────
-# 15. P10k 右侧显示 CPU load 与空闲 RAM
+# 17. git：配置 delta
 # ─────────────────────────────────────────────
-P10K="$HOME/.p10k.zsh"
-if [[ -f "$P10K" ]]; then
-    info "启用 P10k CPU load + RAM 段..."
-    sed -i 's/^    # load                  # CPU load/    load                   # CPU load/' "$P10K"
-    sed -i 's/^    # ram                   # free RAM/    ram                    # free RAM/' "$P10K"
-    ok "P10k load + ram 已启用"
-else
-    warn "未找到 ~/.p10k.zsh，跳过 P10k 配置"
-fi
+info "配置 git delta..."
+git config --global core.pager             delta
+git config --global interactive.diffFilter "delta --color-only"
+git config --global delta.navigate         true
+git config --global delta.side-by-side     true
+git config --global delta.line-numbers     true
+git config --global delta.syntax-theme     "Catppuccin Mocha"
+git config --global merge.conflictstyle    zdiff3
+ok "git delta 配置完毕（分栏 diff + Catppuccin Mocha）"
 
 # ─────────────────────────────────────────────
-# 16. Neovim 插件（which-key / mini.animate / todo-comments）
+# 18. Neovim 插件（which-key / mini.animate / todo-comments）
 # ─────────────────────────────────────────────
 NVIM_UI="$HOME/.config/nvim/lua/plugins/ui.lua"
 if [[ -f "$NVIM_UI" ]] && ! grep -q "which-key.nvim" "$NVIM_UI"; then
     info "追加 Neovim 插件：which-key / mini.animate / todo-comments..."
-    # 在文件最后一个 `}` 之前插入新插件块
     sed -i 's/^}$//' "$NVIM_UI"
     cat >> "$NVIM_UI" << 'NVIM_EOF'
 
@@ -628,6 +861,14 @@ else
 fi
 
 # ─────────────────────────────────────────────
+# 19. tldr 缓存更新
+# ─────────────────────────────────────────────
+if command -v tldr &>/dev/null; then
+    info "更新 tldr 缓存..."
+    tldr --update 2>&1 | grep -q "Successfully" && ok "tldr 缓存更新完毕" || ok "tldr 缓存已是最新"
+fi
+
+# ─────────────────────────────────────────────
 # 完成
 # ─────────────────────────────────────────────
 echo ""
@@ -642,5 +883,5 @@ echo "  3. 系统设置 → 外观 → 光标    → 选择 Catppuccin-Mocha-Mau
 echo "  4. 系统设置 → 窗口装饰        → 选择 Klassy"
 echo "  5. 系统设置 → 字体            → 确认各项已显示 HarmonyOS Sans SC"
 echo "  6. 系统设置 → 输入法          → 添加「Rime」并将其置顶"
-echo "  7. 新开终端后运行 source ~/.zshrc 使别名生效"
+echo "  7. 开新终端标签页 → 执行 p10k configure 完成提示符向导"
 echo "  8. 注销或重启以使所有更改完全生效"
