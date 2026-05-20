@@ -15,7 +15,7 @@
 |------|------|
 | 全局主题 | Catppuccin Mocha Mauve（主题色、配色方案、光标） |
 | 窗口装饰 | Klassy |
-| 图标 | Papirus-Dark + Catppuccin Mauve 文件夹色 |
+| 图标 | Qogir-dark |
 | 登录界面 | Catppuccin Mocha Mauve SDDM 主题 |
 | 字体 | HarmonyOS Sans SC（系统）+ IoskeleyMonoTerm Nerd Font（终端） |
 | 终端 | Konsole + Catppuccin Mocha |
@@ -71,7 +71,7 @@ chmod +x kde-catppuccin-setup.sh
 脚本结束时会列出以下手动确认项（部分设置需在图形界面中点选）：
 
 1. **系统设置 → 外观 → 全局主题** → 选择 `Catppuccin-Mocha-Mauve`
-2. **系统设置 → 外观 → 图标** → 选择 `Papirus-Dark`
+2. **系统设置 → 外观 → 图标** → 选择 `Qogir-dark`
 3. **系统设置 → 外观 → 光标** → 选择 `Catppuccin-Mocha-Mauve-Cursors`
 4. **系统设置 → 窗口装饰** → 选择 `Klassy`
 5. **系统设置 → 字体** → 确认各项已显示 `HarmonyOS Sans SC`
@@ -98,7 +98,7 @@ chmod +x kde-catppuccin-setup.sh
 
 - [Catppuccin](https://github.com/catppuccin) — 主题配色方案
 - [Klassy](https://github.com/paulmcauley/klassy) — 窗口装饰
-- [Papirus](https://github.com/PapirusDevelopmentTeam/papirus-icon-theme) — 图标主题
+- [Qogir](https://github.com/vinceliuice/Qogir-icon-theme) — 图标主题
 - [Nerd Fonts](https://github.com/ryanoasis/nerd-fonts) — IoskeleyMonoTerm 字体
 - [rime-ice](https://github.com/iDvel/rime-ice) — 雾凇拼音输入方案
 - [catppuccin/fcitx5](https://github.com/catppuccin/fcitx5) — fcitx5 Catppuccin 皮肤

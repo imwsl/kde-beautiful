@@ -18,7 +18,7 @@ trap 'rm -rf "$TMPDIR_SETUP"' EXIT
 # ─────────────────────────────────────────────
 # 1. 系统依赖包
 # ─────────────────────────────────────────────
-SYS_PKGS=(kvantum klassy papirus-icon-theme google-noto-sans-cjk-fonts
+SYS_PKGS=(kvantum klassy google-noto-sans-cjk-fonts
           google-noto-serif-cjk-fonts wqy-zenhei-fonts git curl unzip)
 SYS_MISSING=()
 for _pkg in "${SYS_PKGS[@]}"; do
@@ -199,30 +199,7 @@ EOF
 fi
 
 # ─────────────────────────────────────────────
-# 7. Papirus 图标 + Catppuccin 文件夹颜色
-# ─────────────────────────────────────────────
-_PAPIRUS_MARKER="$HOME/.local/share/papirus-catppuccin-mauve.applied"
-if [[ -f "$_PAPIRUS_MARKER" ]]; then
-    ok "Papirus 文件夹颜色已配置，跳过"
-else
-    info "配置 Papirus 图标文件夹颜色（Catppuccin Mocha Mauve）..."
-    PAPIRUS_FOLDERS="$TMPDIR_SETUP/papirus-folders"
-    curl -L --progress-bar \
-        "https://raw.githubusercontent.com/PapirusDevelopmentTeam/papirus-folders/master/papirus-folders" \
-        -o "$PAPIRUS_FOLDERS"
-    chmod +x "$PAPIRUS_FOLDERS"
-
-    for icon_theme in Papirus Papirus-Dark Papirus-Light; do
-        if [[ -d "/usr/share/icons/$icon_theme" ]]; then
-            sudo "$PAPIRUS_FOLDERS" -C violet --theme "$icon_theme"
-        fi
-    done
-    touch "$_PAPIRUS_MARKER"
-    ok "Papirus 文件夹颜色配置完毕"
-fi
-
-# ─────────────────────────────────────────────
-# 7b. Qogir 图标主题
+# 7. Qogir 图标主题
 # ─────────────────────────────────────────────
 QOGIR_ICON_DIR="$HOME/.local/share/icons/Qogir"
 if [[ -d "$QOGIR_ICON_DIR" ]]; then
@@ -912,7 +889,7 @@ echo -e "${GREEN}╚════════════════════
 echo ""
 echo "后续手动确认项："
 echo "  1. 系统设置 → 外观 → 全局主题 → 选择 Catppuccin-Mocha-Mauve"
-echo "  2. 系统设置 → 外观 → 图标    → 选择 Papirus-Dark"
+echo "  2. 系统设置 → 外观 → 图标    → 选择 Qogir-dark"
 echo "  3. 系统设置 → 外观 → 光标    → 选择 Catppuccin-Mocha-Mauve-Cursors"
 echo "  4. 系统设置 → 窗口装饰        → 选择 Klassy"
 echo "  5. 系统设置 → 字体            → 确认各项已显示 HarmonyOS Sans SC"
