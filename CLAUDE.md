@@ -29,7 +29,7 @@ shellcheck kde-catppuccin-setup.sh
 
 **主体：顺序执行的安装阶段**（约 20 个，用 `# ─────` 注释分隔）
 
-各阶段涵盖：系统包（dnf）、字体、KDE 全局主题、SDDM、图标、KWin 特效、终端（Ghostty/Konsole）、输入法（fcitx5-rime）、壁纸、CLI 工具、zsh/btop/fastfetch/neovim 配置、git delta、tldr 缓存。
+各阶段涵盖：系统包（dnf）、字体、KDE 全局主题、SDDM、图标（Qogir）、KWin 特效、Konsole、输入法（fcitx5-rime）、壁纸、CLI 工具、zsh/btop/fastfetch/neovim 配置、git delta、tldr 缓存。
 
 ## 关键模式
 
