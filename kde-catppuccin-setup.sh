@@ -33,32 +33,38 @@ sudo dnf install -y \
 ok "系统依赖安装完毕"
 
 # ─────────────────────────────────────────────
-# 2. Ghostty 终端
+# 3. IoskeleyMonoTerm Nerd Font
 # ─────────────────────────────────────────────
-if ! command -v ghostty &>/dev/null; then
-    info "安装 Ghostty 终端..."
-    sudo dnf copr enable -y scottames/ghostty
-    sudo dnf install -y ghostty
-    ok "Ghostty 安装完毕"
+IOSK_FONT_DIR="$HOME/.local/share/fonts"
+if [[ -f "$IOSK_FONT_DIR/Normal/IoskeleyMonoTermNerdFont-Regular.ttf" ]]; then
+    ok "IoskeleyMonoTerm Nerd Font 已安装，跳过"
 else
-    ok "Ghostty 已安装，跳过"
+    info "下载 IoskeleyMonoTerm Nerd Font..."
+    curl -L --progress-bar \
+        "https://github.com/ryanoasis/nerd-fonts/releases/latest/download/IoskeleyTermMono.tar.xz" \
+        -o "$TMPDIR_SETUP/IoskeleyTermMono.tar.xz"
+    mkdir -p "$IOSK_FONT_DIR/Normal" "$IOSK_FONT_DIR/Condensed" "$IOSK_FONT_DIR/SemiCondensed"
+    tar -xf "$TMPDIR_SETUP/IoskeleyTermMono.tar.xz" -C "$IOSK_FONT_DIR"
+    fc-cache -f "$IOSK_FONT_DIR/Normal" "$IOSK_FONT_DIR/Condensed" "$IOSK_FONT_DIR/SemiCondensed"
+    ok "IoskeleyMonoTerm Nerd Font 安装完毕"
 fi
 
 # ─────────────────────────────────────────────
-# 3. AdwaitaMono Nerd Font
+# 3b. Symbols Nerd Font Mono（图标符号备用字体）
 # ─────────────────────────────────────────────
-FONT_DIR="$HOME/.local/share/fonts/AdwaitaMono"
-if [[ ! -f "$FONT_DIR/AdwaitaMonoNerdFont-Regular.ttf" ]]; then
-    info "下载 AdwaitaMono Nerd Font..."
-    mkdir -p "$FONT_DIR"
-    curl -L --progress-bar \
-        "https://github.com/ryanoasis/nerd-fonts/releases/latest/download/AdwaitaMono.tar.xz" \
-        -o "$TMPDIR_SETUP/AdwaitaMono.tar.xz"
-    tar -xf "$TMPDIR_SETUP/AdwaitaMono.tar.xz" -C "$FONT_DIR"
-    fc-cache -f "$FONT_DIR"
-    ok "AdwaitaMono Nerd Font 安装完毕"
+NFM_FILE="$HOME/.local/share/fonts/NFM.ttf"
+if [[ -f "$NFM_FILE" ]]; then
+    ok "Symbols Nerd Font Mono 已安装，跳过"
 else
-    ok "AdwaitaMono Nerd Font 已安装，跳过"
+    info "下载 Symbols Nerd Font Mono..."
+    curl -L --progress-bar \
+        "https://github.com/ryanoasis/nerd-fonts/releases/latest/download/NerdFontsSymbolsOnly.tar.xz" \
+        -o "$TMPDIR_SETUP/NerdFontsSymbolsOnly.tar.xz"
+    tar -xf "$TMPDIR_SETUP/NerdFontsSymbolsOnly.tar.xz" -C "$HOME/.local/share/fonts/" \
+        --wildcards "NFM.ttf" 2>/dev/null || \
+        tar -xf "$TMPDIR_SETUP/NerdFontsSymbolsOnly.tar.xz" -C "$HOME/.local/share/fonts/"
+    fc-cache -f "$HOME/.local/share/fonts"
+    ok "Symbols Nerd Font Mono 安装完毕"
 fi
 
 # ─────────────────────────────────────────────
@@ -226,62 +232,23 @@ else
 fi
 
 # ─────────────────────────────────────────────
-# 9. Ghostty 配置
+# 8b. 禁用 PipeWire AirPlay（RAOP）模块
 # ─────────────────────────────────────────────
-GHOSTTY_CONFIG="$HOME/.config/ghostty/config"
-if [[ -f "$GHOSTTY_CONFIG" ]]; then
-    ok "Ghostty 配置已存在，跳过"
+RAOP_CONF="$HOME/.config/pipewire/pipewire.conf.d/50-disable-raop.conf"
+if [[ -f "$RAOP_CONF" ]]; then
+    ok "PipeWire RAOP 禁用配置已存在，跳过"
 else
-    info "写入 Ghostty 配置..."
-    mkdir -p "$HOME/.config/ghostty"
-    cat > "$GHOSTTY_CONFIG" << 'GHOSTTY_EOF'
-# ── 主题 ────────────────────────────────────────────────────────
-theme = Catppuccin Mocha
-
-# ── 字体 ────────────────────────────────────────────────────────
-font-family = AdwaitaMono Nerd Font
-font-size = 10
-font-feature = calt
-font-feature = liga
-font-feature = ss01
-font-feature = ss02
-font-feature = ss19
-font-feature = ss20
-
-# ── 外观 ────────────────────────────────────────────────────────
-background-opacity = 0.95
-background-blur-radius = 20
-cursor-style = bar
-cursor-style-blink = true
-cursor-color = #f5c2e7
-
-# 去掉标题栏（KDE 下用窗口装饰）
-window-decoration = server
-
-# 内边距
-window-padding-x = 12
-window-padding-y = 10
-window-padding-balance = true
-
-# ── 行为 ────────────────────────────────────────────────────────
-shell-integration = zsh
-scrollback-limit = 10000
-copy-on-select = clipboard
-confirm-close-surface = false
-
-# ── 快捷键 ──────────────────────────────────────────────────────
-keybind = ctrl+shift+c=copy_to_clipboard
-keybind = ctrl+shift+v=paste_from_clipboard
-keybind = ctrl+shift+t=new_tab
-keybind = ctrl+shift+w=close_surface
-keybind = ctrl+tab=next_tab
-keybind = ctrl+shift+tab=previous_tab
-keybind = ctrl+shift+n=new_window
-keybind = ctrl+equal=increase_font_size:1
-keybind = ctrl+minus=decrease_font_size:1
-keybind = ctrl+zero=reset_font_size
-GHOSTTY_EOF
-    ok "Ghostty 配置写入完毕"
+    info "禁用 PipeWire AirPlay（RAOP）模块..."
+    mkdir -p "$(dirname "$RAOP_CONF")"
+    cat > "$RAOP_CONF" << 'RAOP_EOF'
+context.properties = {
+    module.raop = false
+}
+RAOP_EOF
+    ok "RAOP 模块已禁用"
+    if systemctl --user is-active pipewire &>/dev/null; then
+        systemctl --user restart pipewire && ok "PipeWire 已重启" || warn "PipeWire 重启失败，重启后生效"
+    fi
 fi
 
 # ─────────────────────────────────────────────

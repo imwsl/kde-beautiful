@@ -9,7 +9,15 @@
       "Bash(shellcheck *)",
       "Bash(git -C /home/imwsl/kde-beautiful status)",
       "Bash(git -C /home/imwsl/kde-beautiful diff)",
-      "Bash(git *)"
+      "Bash(git *)",
+      "Bash(systemctl --user list-units)",
+      "Bash(systemctl list-units *)",
+      "Bash(fc-list)",
+      "Bash(systemctl is-enabled *)",
+      "Bash(systemctl status *)",
+      "Bash(fc-query ~/.local/share/fonts/NFM.ttf)",
+      "Bash(dnf list *)",
+      "Bash(bash -n /home/imwsl/kde-beautiful/kde-catppuccin-setup.sh)"
     ]
   }
 }
