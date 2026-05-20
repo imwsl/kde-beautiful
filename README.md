@@ -17,8 +17,8 @@
 | 窗口装饰 | Klassy |
 | 图标 | Papirus-Dark + Catppuccin Mauve 文件夹色 |
 | 登录界面 | Catppuccin Mocha Mauve SDDM 主题 |
-| 字体 | HarmonyOS Sans SC（系统）+ AdwaitaMono Nerd Font（终端） |
-| 终端 | Ghostty + Catppuccin Mocha + AdwaitaMono Nerd Font |
+| 字体 | HarmonyOS Sans SC（系统）+ IoskeleyMonoTerm Nerd Font（终端） |
+| 终端 | Konsole + Catppuccin Mocha |
 | 合成器 | KWin 三缓冲、模糊、Magic Lamp 动画等 |
 | 输入法 | fcitx5-rime + 雾凇拼音 + Catppuccin Mocha Mauve 皮肤（80% 不透明） |
 | 壁纸 | Catppuccin evening-sky（桌面）+ dark-cat（锁屏） |
@@ -39,7 +39,7 @@
 **网络**
 
 - 能够访问 **GitHub**（下载主题、字体、SDDM 包）
-- 能够访问 **Fedora COPR**（安装 Klassy 窗口装饰和 Ghostty 终端）
+- 能够访问 **Fedora COPR**（安装 Klassy 窗口装饰）
 
 **系统工具**（标准 KDE Plasma 安装中均已包含，无需手动安装）
 
@@ -52,8 +52,7 @@
 
 **注意事项**
 
-- `~/.config/ghostty/config`、`~/.config/fcitx5/conf/classicui.conf` 等配置文件首次运行时写入；若已存在则跳过，自定义内容不会被覆盖
-- Ghostty 配置中 `shell-integration = zsh`，默认适配 zsh；使用其他 Shell 需安装后手动修改
+- `~/.config/fcitx5/conf/classicui.conf` 等配置文件首次运行时写入；若已存在则跳过，自定义内容不会被覆盖
 - rime-ice 安装前会自动备份原有 Rime 配置至 `~/.local/share/fcitx5/rime.bak.<时间戳>`
 
 ## 安装
@@ -100,8 +99,7 @@ chmod +x kde-catppuccin-setup.sh
 - [Catppuccin](https://github.com/catppuccin) — 主题配色方案
 - [Klassy](https://github.com/paulmcauley/klassy) — 窗口装饰
 - [Papirus](https://github.com/PapirusDevelopmentTeam/papirus-icon-theme) — 图标主题
-- [Ghostty](https://ghostty.org) — 终端模拟器
-- [Nerd Fonts](https://github.com/ryanoasis/nerd-fonts) — AdwaitaMono 字体
+- [Nerd Fonts](https://github.com/ryanoasis/nerd-fonts) — IoskeleyMonoTerm 字体
 - [rime-ice](https://github.com/iDvel/rime-ice) — 雾凇拼音输入方案
 - [catppuccin/fcitx5](https://github.com/catppuccin/fcitx5) — fcitx5 Catppuccin 皮肤
 
