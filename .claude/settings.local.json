@@ -17,7 +17,10 @@
       "Bash(systemctl status *)",
       "Bash(fc-query ~/.local/share/fonts/NFM.ttf)",
       "Bash(dnf list *)",
-      "Bash(bash -n /home/imwsl/kde-beautiful/kde-catppuccin-setup.sh)"
+      "Bash(bash -n /home/imwsl/kde-beautiful/kde-catppuccin-setup.sh)",
+      "Bash(grep *)",
+      "Bash(sed -n '18,40p' /home/imwsl/kde-beautiful/kde-catppuccin-setup.sh)",
+      "Bash(sed -n '228,260p' /home/imwsl/kde-beautiful/kde-catppuccin-setup.sh)"
     ]
   }
 }
