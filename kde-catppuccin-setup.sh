@@ -18,19 +18,23 @@ trap 'rm -rf "$TMPDIR_SETUP"' EXIT
 # ─────────────────────────────────────────────
 # 1. 系统依赖包
 # ─────────────────────────────────────────────
-info "安装系统依赖包..."
-sudo dnf copr enable -y major-tom/klassy
-sudo dnf install -y \
-    kvantum \
-    klassy \
-    papirus-icon-theme \
-    google-noto-sans-cjk-fonts \
-    google-noto-serif-cjk-fonts \
-    wqy-zenhei-fonts \
-    git \
-    curl \
-    unzip
-ok "系统依赖安装完毕"
+SYS_PKGS=(kvantum klassy papirus-icon-theme google-noto-sans-cjk-fonts
+          google-noto-serif-cjk-fonts wqy-zenhei-fonts git curl unzip)
+SYS_MISSING=()
+for _pkg in "${SYS_PKGS[@]}"; do
+    rpm -q "$_pkg" &>/dev/null || SYS_MISSING+=("$_pkg")
+done
+
+if [[ ${#SYS_MISSING[@]} -eq 0 ]]; then
+    ok "系统依赖包已全部安装，跳过"
+else
+    info "安装缺失的系统依赖包：${SYS_MISSING[*]}..."
+    if printf '%s\n' "${SYS_MISSING[@]}" | grep -q "^klassy$"; then
+        sudo dnf copr enable -y major-tom/klassy
+    fi
+    sudo dnf install -y "${SYS_MISSING[@]}"
+    ok "系统依赖安装完毕"
+fi
 
 # ─────────────────────────────────────────────
 # 3. IoskeleyMonoTerm Nerd Font
@@ -124,20 +128,25 @@ FONTCONFIG_EOF
     ok "fontconfig 配置写入完毕"
 fi
 
-info "配置 KDE Plasma 字体..."
-kwriteconfig6 --file kdeglobals --group General \
-    --key font                 "HarmonyOS Sans SC,9,-1,5,400,0,0,0,0,0,0,0,0,0,0,1"
-kwriteconfig6 --file kdeglobals --group General \
-    --key menuFont             "HarmonyOS Sans SC,9,-1,5,400,0,0,0,0,0,0,0,0,0,0,1"
-kwriteconfig6 --file kdeglobals --group General \
-    --key toolBarFont          "HarmonyOS Sans SC,9,-1,5,400,0,0,0,0,0,0,0,0,0,0,1"
-kwriteconfig6 --file kdeglobals --group General \
-    --key smallestReadableFont "HarmonyOS Sans SC,8,-1,5,400,0,0,0,0,0,0,0,0,0,0,1"
-kwriteconfig6 --file kdeglobals --group General \
-    --key activeFont           "HarmonyOS Sans SC,9,-1,5,700,0,0,0,0,0,0,0,0,0,0,1"
-kwriteconfig6 --file kdeglobals --group WM \
-    --key activeFont           "HarmonyOS Sans SC,9,-1,5,700,0,0,0,0,0,0,0,0,0,0,1"
-ok "KDE 字体配置完毕"
+_cur_font=$(kreadconfig6 --file kdeglobals --group General --key font 2>/dev/null)
+if [[ "$_cur_font" == HarmonyOS* ]]; then
+    ok "KDE Plasma 字体已配置为 HarmonyOS Sans SC，跳过"
+else
+    info "配置 KDE Plasma 字体..."
+    kwriteconfig6 --file kdeglobals --group General \
+        --key font                 "HarmonyOS Sans SC,9,-1,5,400,0,0,0,0,0,0,0,0,0,0,1"
+    kwriteconfig6 --file kdeglobals --group General \
+        --key menuFont             "HarmonyOS Sans SC,9,-1,5,400,0,0,0,0,0,0,0,0,0,0,1"
+    kwriteconfig6 --file kdeglobals --group General \
+        --key toolBarFont          "HarmonyOS Sans SC,9,-1,5,400,0,0,0,0,0,0,0,0,0,0,1"
+    kwriteconfig6 --file kdeglobals --group General \
+        --key smallestReadableFont "HarmonyOS Sans SC,8,-1,5,400,0,0,0,0,0,0,0,0,0,0,1"
+    kwriteconfig6 --file kdeglobals --group General \
+        --key activeFont           "HarmonyOS Sans SC,9,-1,5,700,0,0,0,0,0,0,0,0,0,0,1"
+    kwriteconfig6 --file kdeglobals --group WM \
+        --key activeFont           "HarmonyOS Sans SC,9,-1,5,700,0,0,0,0,0,0,0,0,0,0,1"
+    ok "KDE 字体配置完毕"
+fi
 
 # ─────────────────────────────────────────────
 # 5. Catppuccin KDE 全局主题（Plasma + 配色 + 光标）
@@ -155,43 +164,62 @@ else
     ok "Catppuccin KDE 主题已安装，跳过"
 fi
 
-info "应用 Catppuccin Mocha Mauve 全局主题..."
-lookandfeeltool -a "Catppuccin-Mocha-Mauve" 2>/dev/null || \
-    warn "lookandfeeltool 未能自动应用，请在系统设置 → 全局主题中手动选择"
+_cur_laf=$(kreadconfig6 --file kdeglobals --group "KDE" --key LookAndFeelPackage 2>/dev/null)
+if [[ "$_cur_laf" == "Catppuccin-Mocha-Mauve" ]]; then
+    ok "全局主题已是 Catppuccin-Mocha-Mauve，跳过"
+else
+    info "应用 Catppuccin Mocha Mauve 全局主题..."
+    lookandfeeltool -a "Catppuccin-Mocha-Mauve" 2>/dev/null || \
+        warn "lookandfeeltool 未能自动应用，请在系统设置 → 全局主题中手动选择"
+fi
 
 # ─────────────────────────────────────────────
 # 6. SDDM 登录主题
 # ─────────────────────────────────────────────
-info "安装 Catppuccin SDDM 登录主题..."
-curl -L --progress-bar \
-    "https://github.com/catppuccin/sddm/releases/latest/download/catppuccin-mocha-mauve-sddm.zip" \
-    -o "$TMPDIR_SETUP/catppuccin-mocha-mauve-sddm.zip"
-sudo unzip -qo "$TMPDIR_SETUP/catppuccin-mocha-mauve-sddm.zip" -d /usr/share/sddm/themes/
+if [[ -d "/usr/share/sddm/themes/catppuccin-mocha-mauve" ]]; then
+    ok "SDDM 主题已安装，跳过"
+else
+    info "安装 Catppuccin SDDM 登录主题..."
+    curl -L --progress-bar \
+        "https://github.com/catppuccin/sddm/releases/latest/download/catppuccin-mocha-mauve-sddm.zip" \
+        -o "$TMPDIR_SETUP/catppuccin-mocha-mauve-sddm.zip"
+    sudo unzip -qo "$TMPDIR_SETUP/catppuccin-mocha-mauve-sddm.zip" -d /usr/share/sddm/themes/
+    ok "SDDM 主题安装完毕"
+fi
 
-sudo mkdir -p /etc/sddm.conf.d
-sudo tee /etc/sddm.conf.d/theme.conf > /dev/null << 'EOF'
+if grep -qs "catppuccin-mocha-mauve" /etc/sddm.conf.d/theme.conf 2>/dev/null; then
+    ok "SDDM 主题配置已就绪，跳过"
+else
+    sudo mkdir -p /etc/sddm.conf.d
+    sudo tee /etc/sddm.conf.d/theme.conf > /dev/null << 'EOF'
 [Theme]
 Current=catppuccin-mocha-mauve
 EOF
-ok "SDDM 主题配置完毕"
+    ok "SDDM 主题配置完毕"
+fi
 
 # ─────────────────────────────────────────────
 # 7. Papirus 图标 + Catppuccin 文件夹颜色
 # ─────────────────────────────────────────────
-info "配置 Papirus 图标文件夹颜色（Catppuccin Mocha Mauve）..."
-PAPIRUS_FOLDERS="$TMPDIR_SETUP/papirus-folders"
-curl -L --progress-bar \
-    "https://raw.githubusercontent.com/PapirusDevelopmentTeam/papirus-folders/master/papirus-folders" \
-    -o "$PAPIRUS_FOLDERS"
-chmod +x "$PAPIRUS_FOLDERS"
+_PAPIRUS_MARKER="$HOME/.local/share/papirus-catppuccin-mauve.applied"
+if [[ -f "$_PAPIRUS_MARKER" ]]; then
+    ok "Papirus 文件夹颜色已配置，跳过"
+else
+    info "配置 Papirus 图标文件夹颜色（Catppuccin Mocha Mauve）..."
+    PAPIRUS_FOLDERS="$TMPDIR_SETUP/papirus-folders"
+    curl -L --progress-bar \
+        "https://raw.githubusercontent.com/PapirusDevelopmentTeam/papirus-folders/master/papirus-folders" \
+        -o "$PAPIRUS_FOLDERS"
+    chmod +x "$PAPIRUS_FOLDERS"
 
-# 确保 Papirus 系列目录存在
-for icon_theme in Papirus Papirus-Dark Papirus-Light; do
-    if [[ -d "/usr/share/icons/$icon_theme" ]]; then
-        sudo "$PAPIRUS_FOLDERS" -C violet --theme "$icon_theme"
-    fi
-done
-ok "Papirus 文件夹颜色配置完毕"
+    for icon_theme in Papirus Papirus-Dark Papirus-Light; do
+        if [[ -d "/usr/share/icons/$icon_theme" ]]; then
+            sudo "$PAPIRUS_FOLDERS" -C violet --theme "$icon_theme"
+        fi
+    done
+    touch "$_PAPIRUS_MARKER"
+    ok "Papirus 文件夹颜色配置完毕"
+fi
 
 # ─────────────────────────────────────────────
 # 7b. Qogir 图标主题
@@ -212,23 +240,29 @@ fi
 # ─────────────────────────────────────────────
 # 8. KWin 合成器与特效
 # ─────────────────────────────────────────────
-info "配置 KWin 合成器与动效..."
-kwriteconfig6 --file kwinrc --group Compositing --key AnimationSpeed 5
-kwriteconfig6 --file kwinrc --group Compositing --key TripleBuffering true
-kwriteconfig6 --file kwinrc --group Compositing --key GLCore true
-kwriteconfig6 --file kwinrc --group Plugins --key blurEnabled true
-kwriteconfig6 --file kwinrc --group Plugins --key magiclampEnabled true
-kwriteconfig6 --file kwinrc --group Plugins --key slideEnabled true
-kwriteconfig6 --file kwinrc --group Plugins --key wobblywindowsEnabled false
-kwriteconfig6 --file kdeglobals --group KDE --key AnimationDurationFactor 0.5
-
-# 通知 KWin 重新加载配置（桌面会话中运行时有效）
-if DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u)/bus" \
-   dbus-send --session --dest=org.kde.KWin --type=method_call \
-   /KWin org.kde.KWin.reconfigure 2>/dev/null; then
-    ok "KWin 已重新加载配置"
+_kwin_tri=$(kreadconfig6 --file kwinrc --group Compositing --key TripleBuffering 2>/dev/null)
+_kwin_adf=$(kreadconfig6 --file kdeglobals --group KDE --key AnimationDurationFactor 2>/dev/null)
+_kwin_wob=$(kreadconfig6 --file kwinrc --group Plugins --key wobblywindowsEnabled 2>/dev/null)
+if [[ "$_kwin_tri" == "true" && "$_kwin_adf" == "0.5" && "$_kwin_wob" == "false" ]]; then
+    ok "KWin 配置已就绪，跳过"
 else
-    warn "KWin 重载跳过（非图形会话），重启后生效"
+    info "配置 KWin 合成器与动效..."
+    kwriteconfig6 --file kwinrc --group Compositing --key AnimationSpeed 5
+    kwriteconfig6 --file kwinrc --group Compositing --key TripleBuffering true
+    kwriteconfig6 --file kwinrc --group Compositing --key GLCore true
+    kwriteconfig6 --file kwinrc --group Plugins --key blurEnabled true
+    kwriteconfig6 --file kwinrc --group Plugins --key magiclampEnabled true
+    kwriteconfig6 --file kwinrc --group Plugins --key slideEnabled true
+    kwriteconfig6 --file kwinrc --group Plugins --key wobblywindowsEnabled false
+    kwriteconfig6 --file kdeglobals --group KDE --key AnimationDurationFactor 0.5
+
+    if DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u)/bus" \
+       dbus-send --session --dest=org.kde.KWin --type=method_call \
+       /KWin org.kde.KWin.reconfigure 2>/dev/null; then
+        ok "KWin 已重新加载配置"
+    else
+        warn "KWin 重载跳过（非图形会话），重启后生效"
+    fi
 fi
 
 # ─────────────────────────────────────────────
@@ -432,6 +466,9 @@ fi
 # ─────────────────────────────────────────────
 # 13. btop Catppuccin Mocha 主题
 # ─────────────────────────────────────────────
+if [[ -f "$HOME/.config/btop/themes/catppuccin_mocha.theme" && -f "$HOME/.config/btop/btop.conf" ]]; then
+    ok "btop 主题配置已存在，跳过"
+else
 info "配置 btop Catppuccin Mocha 主题..."
 mkdir -p "$HOME/.config/btop/themes"
 
@@ -524,6 +561,7 @@ show_battery_watts = True
 log_level = "WARNING"
 BTOP_CONF_EOF
 ok "btop 主题配置完毕"
+fi
 
 # ─────────────────────────────────────────────
 # 14. zsh：插件 + powerlevel10k + zshrc
@@ -553,6 +591,9 @@ _clone_if_missing "powerlevel10k" \
     "https://github.com/romkatv/powerlevel10k" \
     "$OMZ_CUSTOM/themes/powerlevel10k"
 
+if grep -q "powerlevel10k" ~/.zshrc 2>/dev/null && grep -q "zoxide" ~/.zshrc 2>/dev/null; then
+    ok "~/.zshrc 已配置，跳过"
+else
 [[ -f ~/.zshrc ]] && cp ~/.zshrc ~/.zshrc.bak && info "已备份原有 ~/.zshrc 至 ~/.zshrc.bak"
 
 cat > ~/.zshrc << 'ZSHRC'
@@ -641,12 +682,15 @@ alias fkill='procs | fzf | awk "{print $1}" | xargs kill'
 # p10k config (run `p10k configure` to regenerate)
 [[ -f ~/.p10k.zsh ]] && source ~/.p10k.zsh
 ZSHRC
-
 ok "~/.zshrc 写入完毕"
+fi
 
 # ─────────────────────────────────────────────
 # 15. fastfetch 配置
 # ─────────────────────────────────────────────
+if [[ -f ~/.config/fastfetch/config.jsonc ]]; then
+    ok "fastfetch 配置已存在，跳过"
+else
 info "写入 fastfetch 配置..."
 mkdir -p ~/.config/fastfetch
 
@@ -732,15 +776,18 @@ cat > ~/.config/fastfetch/config.jsonc << FFEOF
 FFEOF
 
 ok "fastfetch 配置写入完毕（网络接口前缀：${_WIFI_PREFIX}*）"
+fi
 
 # ─────────────────────────────────────────────
 # 16. Konsole 配置
 # ─────────────────────────────────────────────
-info "配置 Konsole..."
 KONSOLE_PROFILE_DIR="$HOME/.local/share/konsole"
-mkdir -p "$KONSOLE_PROFILE_DIR"
-
-cat > "$KONSOLE_PROFILE_DIR/mine.profile" << 'PROFILE'
+if [[ -f "$KONSOLE_PROFILE_DIR/mine.profile" ]]; then
+    ok "Konsole profile 已存在，跳过"
+else
+    info "配置 Konsole..."
+    mkdir -p "$KONSOLE_PROFILE_DIR"
+    cat > "$KONSOLE_PROFILE_DIR/mine.profile" << 'PROFILE'
 [Appearance]
 ColorScheme=catppuccin-mocha
 Font=JetBrains Mono,9,-1,5,400,0,0,0,0,0,0,0,0,0,0,1
@@ -754,23 +801,27 @@ HistoryMode=1
 HistorySize=50000
 ScrollBarPosition=2
 PROFILE
-
-[[ -f ~/.config/konsolerc ]] && \
-    kwriteconfig6 --file konsolerc --group "Desktop Entry" --key DefaultProfile mine.profile
-ok "Konsole profile 写入完毕（Catppuccin Mocha + 50000 行滚动缓冲）"
+    [[ -f ~/.config/konsolerc ]] && \
+        kwriteconfig6 --file konsolerc --group "Desktop Entry" --key DefaultProfile mine.profile
+    ok "Konsole profile 写入完毕（Catppuccin Mocha + 50000 行滚动缓冲）"
+fi
 
 # ─────────────────────────────────────────────
 # 17. git：配置 delta
 # ─────────────────────────────────────────────
-info "配置 git delta..."
-git config --global core.pager             delta
-git config --global interactive.diffFilter "delta --color-only"
-git config --global delta.navigate         true
-git config --global delta.side-by-side     true
-git config --global delta.line-numbers     true
-git config --global delta.syntax-theme     "Catppuccin Mocha"
-git config --global merge.conflictstyle    zdiff3
-ok "git delta 配置完毕（分栏 diff + Catppuccin Mocha）"
+if [[ "$(git config --global core.pager 2>/dev/null)" == "delta" ]]; then
+    ok "git delta 已配置，跳过"
+else
+    info "配置 git delta..."
+    git config --global core.pager             delta
+    git config --global interactive.diffFilter "delta --color-only"
+    git config --global delta.navigate         true
+    git config --global delta.side-by-side     true
+    git config --global delta.line-numbers     true
+    git config --global delta.syntax-theme     "Catppuccin Mocha"
+    git config --global merge.conflictstyle    zdiff3
+    ok "git delta 配置完毕（分栏 diff + Catppuccin Mocha）"
+fi
 
 # ─────────────────────────────────────────────
 # 18. Neovim 插件（which-key / mini.animate / todo-comments）
