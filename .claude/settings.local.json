@@ -20,7 +20,25 @@
       "Bash(bash -n /home/imwsl/kde-beautiful/kde-catppuccin-setup.sh)",
       "Bash(grep *)",
       "Bash(sed -n '18,40p' /home/imwsl/kde-beautiful/kde-catppuccin-setup.sh)",
-      "Bash(sed -n '228,260p' /home/imwsl/kde-beautiful/kde-catppuccin-setup.sh)"
+      "Bash(sed -n '228,260p' /home/imwsl/kde-beautiful/kde-catppuccin-setup.sh)",
+      "Bash(curl -s \"https://api.github.com/repos/ryanoasis/nerd-fonts/releases/latest\")",
+      "Bash(python3 -c \"import sys,json; assets=[a['name'] for a in json.load\\(sys.stdin\\)['assets'] if 'iosev' in a['name'].lower\\(\\) or 'iosk' in a['name'].lower\\(\\)]; print\\('\\\\n'.join\\(assets\\)\\)\")",
+      "Bash(python3 -c \"import sys,json; data=json.load\\(sys.stdin\\); print\\(list\\(data.keys\\(\\)\\)[:5]\\); print\\(data.get\\('message',''\\)\\)\")",
+      "Bash(curl -sI \"https://github.com/ryanoasis/nerd-fonts/releases/latest/download/IosevkaTermMono.tar.xz\")",
+      "Bash(curl -sI \"https://github.com/ryanoasis/nerd-fonts/releases/download/v3.4.0/IosevkaTermMono.tar.xz\")",
+      "Bash(curl -sI https://github.com/ryanoasis/nerd-fonts/releases/latest/download/IosevkaTermMono.__TRACKED_VAR__)",
+      "Bash(curl -s \"https://api.github.com/repos/ahatem/IoskeleyMono/releases/latest\")",
+      "Bash(python3 -c \"import sys,json; data=json.load\\(sys.stdin\\); [print\\(a['name'], a['browser_download_url']\\) for a in data.get\\('assets',[]\\)]\")",
+      "Bash(curl -s \"https://api.github.com/repos/ahatem/IoskeleyMono/releases\")",
+      "Bash(python3 -c \"import sys,json; data=json.load\\(sys.stdin\\); print\\(type\\(data\\), len\\(data\\) if isinstance\\(data,list\\) else data\\)\")",
+      "Bash(curl -sI \"https://github.com/ahatem/IoskeleyMono/releases/latest/download/IoskeleyMono.tar.xz\")",
+      "Bash(curl -sI \"https://github.com/ahatem/IoskeleyMono/releases/latest/download/IoskeleyMono.zip\")",
+      "Bash(curl -sI \"https://github.com/ahatem/IoskeleyMono/releases/download/v2.0.0/IoskeleyMono.tar.xz\")",
+      "Bash(curl -sI \"https://github.com/ahatem/IoskeleyMono/releases/download/v2.0.0/IoskeleyMono.zip\")",
+      "Bash(curl -sI \"https://github.com/ahatem/IoskeleyMono/releases/download/v2.0.0/IoskeleyMono.zip\" -L)",
+      "Read(//tmp/**)",
+      "Bash(curl -sL \"https://github.com/ahatem/IoskeleyMono/releases/latest/download/IoskeleyMono.zip\" -o IoskeleyMono_test.zip)",
+      "Bash(unzip -l IoskeleyMono_test.zip)"
     ]
   }
 }
