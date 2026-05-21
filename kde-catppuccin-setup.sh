@@ -40,17 +40,17 @@ fi
 # 3. IoskeleyMonoTerm Nerd Font
 # ─────────────────────────────────────────────
 IOSK_FONT_DIR="$HOME/.local/share/fonts"
-if [[ -f "$IOSK_FONT_DIR/Normal/IoskeleyMonoTermNerdFont-Regular.ttf" ]]; then
-    ok "IoskeleyMonoTerm Nerd Font 已安装，跳过"
+if [[ -f "$IOSK_FONT_DIR/Normal/Hinted/IoskeleyMono-Regular.ttf" ]]; then
+    ok "IoskeleyMono 字体已安装，跳过"
 else
-    info "下载 IoskeleyMonoTerm Nerd Font..."
+    info "下载 IoskeleyMono 字体..."
     curl -L --progress-bar \
-        "https://github.com/ryanoasis/nerd-fonts/releases/latest/download/IoskeleyTermMono.tar.xz" \
-        -o "$TMPDIR_SETUP/IoskeleyTermMono.tar.xz"
-    mkdir -p "$IOSK_FONT_DIR/Normal" "$IOSK_FONT_DIR/Condensed" "$IOSK_FONT_DIR/SemiCondensed"
-    tar -xf "$TMPDIR_SETUP/IoskeleyTermMono.tar.xz" -C "$IOSK_FONT_DIR"
-    fc-cache -f "$IOSK_FONT_DIR/Normal" "$IOSK_FONT_DIR/Condensed" "$IOSK_FONT_DIR/SemiCondensed"
-    ok "IoskeleyMonoTerm Nerd Font 安装完毕"
+        "https://github.com/ahatem/IoskeleyMono/releases/latest/download/IoskeleyMono.zip" \
+        -o "$TMPDIR_SETUP/IoskeleyMono.zip"
+    mkdir -p "$IOSK_FONT_DIR"
+    unzip -o "$TMPDIR_SETUP/IoskeleyMono.zip" -d "$IOSK_FONT_DIR"
+    fc-cache -f "$IOSK_FONT_DIR"
+    ok "IoskeleyMono 字体安装完毕"
 fi
 
 # ─────────────────────────────────────────────
